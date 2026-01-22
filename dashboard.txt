@@ -826,7 +826,7 @@
       "panels": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "description": "Pod bazında GPU kullanım yüzdesi (her pod ayrı çizgi olarak gösterilir)",
+          "description": "Deployment bazında GPU kullanım yüzdesi (stacked). Toplam kapasite çizgisi üstte gösterilir.",
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "palette-classic" },
@@ -838,18 +838,18 @@
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 20,
+                "fillOpacity": 30,
                 "gradientMode": "none",
                 "hideFrom": { "legend": false, "tooltip": false, "viz": false },
                 "lineInterpolation": "smooth",
                 "lineStyle": { "fill": "solid" },
-                "lineWidth": 2,
+                "lineWidth": 1,
                 "pointSize": 5,
                 "scaleDistribution": { "type": "linear" },
                 "showPoints": "never",
                 "spanNulls": false,
-                "stacking": { "group": "A", "mode": "none" },
-                "thresholdsStyle": { "mode": "line+area" }
+                "stacking": { "group": "A", "mode": "normal" },
+                "thresholdsStyle": { "mode": "off" }
               },
               "mappings": [],
               "max": 100,
@@ -857,15 +857,22 @@
               "noValue": "0",
               "thresholds": {
                 "mode": "absolute",
-                "steps": [
-                  { "color": "transparent", "value": null },
-                  { "color": "rgba(255, 255, 0, 0.08)", "value": 70 },
-                  { "color": "rgba(255, 0, 0, 0.08)", "value": 90 }
-                ]
+                "steps": [{ "color": "green", "value": null }]
               },
               "unit": "percent"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Toplam Kapasite" },
+                "properties": [
+                  { "id": "custom.stacking", "value": { "group": false, "mode": "none" } },
+                  { "id": "custom.lineWidth", "value": 2 },
+                  { "id": "custom.lineStyle", "value": { "dash": [10, 10], "fill": "dash" } },
+                  { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } },
+                  { "id": "custom.fillOpacity", "value": 0 }
+                ]
+              }
+            ]
           },
           "gridPos": { "h": 10, "w": 12, "x": 0, "y": 28 },
           "id": 401,
@@ -878,18 +885,27 @@
               "datasource": { "type": "prometheus", "uid": "${datasource}" },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "clamp_max(avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}[$__rate_interval]) * 100, 100)",
-              "legendFormat": "{{exported_pod}} @ {{Hostname}}",
+              "expr": "clamp_max(\n  sum by (deployment) (\n    label_replace(\n      avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}[$__rate_interval]),\n      \"deployment\", \"$1\", \"exported_pod\", \"(.+)-[a-z0-9]+-[a-z0-9]+$\"\n    )\n  ) * 100,\n  100\n)",
+              "legendFormat": "{{deployment}}",
               "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})) * 100 / clamp_min(count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})), 1)",
+              "legendFormat": "Toplam Kapasite",
+              "range": true,
+              "refId": "B"
             }
           ],
-          "title": "Pod Bazlı Kullanım (%)",
+          "title": "Deployment Bazlı Kullanım (%)",
           "type": "timeseries"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "description": "Pod bazında GPU bellek kullanım yüzdesi",
+          "description": "Deployment bazında GPU bellek kullanımı (stacked). Beyaz kesikli çizgi toplam kapasiteyi gösterir.",
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "palette-classic" },
@@ -901,34 +917,41 @@
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 20,
+                "fillOpacity": 30,
                 "gradientMode": "none",
                 "hideFrom": { "legend": false, "tooltip": false, "viz": false },
                 "lineInterpolation": "smooth",
                 "lineStyle": { "fill": "solid" },
-                "lineWidth": 2,
+                "lineWidth": 1,
                 "pointSize": 5,
                 "scaleDistribution": { "type": "linear" },
                 "showPoints": "never",
                 "spanNulls": false,
-                "stacking": { "group": "A", "mode": "none" },
-                "thresholdsStyle": { "mode": "line+area" }
+                "stacking": { "group": "A", "mode": "normal" },
+                "thresholdsStyle": { "mode": "off" }
               },
               "mappings": [],
               "min": 0,
               "noValue": "0",
               "thresholds": {
                 "mode": "absolute",
-                "steps": [
-                  { "color": "transparent", "value": null },
-                  { "color": "rgba(255, 255, 0, 0.08)", "value": 70 },
-                  { "color": "rgba(255, 0, 0, 0.08)", "value": 90 }
-                ]
+                "steps": [{ "color": "green", "value": null }]
               },
               "max": 100,
               "unit": "percent"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Toplam Kapasite" },
+                "properties": [
+                  { "id": "custom.stacking", "value": { "group": false, "mode": "none" } },
+                  { "id": "custom.lineWidth", "value": 2 },
+                  { "id": "custom.lineStyle", "value": { "dash": [10, 10], "fill": "dash" } },
+                  { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } },
+                  { "id": "custom.fillOpacity", "value": 0 }
+                ]
+              }
+            ]
           },
           "gridPos": { "h": 10, "w": 12, "x": 12, "y": 28 },
           "id": 402,
@@ -941,17 +964,26 @@
               "datasource": { "type": "prometheus", "uid": "${datasource}" },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "(\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", exported_pod!=\"\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", exported_pod!=\"\"})\n  , 1)\n) * 100",
-              "legendFormat": "{{exported_pod}} @ {{Hostname}}",
+              "expr": "sum by (deployment) (\n  label_replace(\n    DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"},\n    \"deployment\", \"$1\", \"exported_pod\", \"(.+)-[a-z0-9]+-[a-z0-9]+$\"\n  )\n)\n/\nclamp_min(\n  sum(max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )),\n  1\n) * 100",
+              "legendFormat": "{{deployment}}",
               "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "vector(100)",
+              "legendFormat": "Toplam Kapasite",
+              "range": true,
+              "refId": "B"
             }
           ],
-          "title": "Pod Bazlı Bellek (%)",
+          "title": "Deployment Bazlı Bellek (%)",
           "type": "timeseries"
         }
       ],
-      "title": "📦 Pod Bazlı Detay",
+      "title": "📦 Deployment Bazlı Detay",
       "type": "row"
     },
     {
@@ -1554,8 +1586,8 @@
     "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
-  "title": "GPU İzleme - Production v7",
-  "uid": "gpu-monitoring-prod-v7",
-  "version": 7,
+  "title": "GPU İzleme - Production v8",
+  "uid": "gpu-monitoring-prod-v8",
+  "version": 8,
   "weekStart": ""
 }
