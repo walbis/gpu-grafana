@@ -889,7 +889,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "description": "Pod bazında GPU bellek kullanımı (MiB)",
+          "description": "Pod bazında GPU bellek kullanım yüzdesi",
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "palette-classic" },
@@ -912,16 +912,21 @@
                 "showPoints": "never",
                 "spanNulls": false,
                 "stacking": { "group": "A", "mode": "none" },
-                "thresholdsStyle": { "mode": "off" }
+                "thresholdsStyle": { "mode": "line+area" }
               },
               "mappings": [],
               "min": 0,
               "noValue": "0",
               "thresholds": {
                 "mode": "absolute",
-                "steps": [{ "color": "green", "value": null }]
+                "steps": [
+                  { "color": "transparent", "value": null },
+                  { "color": "rgba(255, 255, 0, 0.08)", "value": 70 },
+                  { "color": "rgba(255, 0, 0, 0.08)", "value": 90 }
+                ]
               },
-              "unit": "mibytes"
+              "max": 100,
+              "unit": "percent"
             },
             "overrides": []
           },
@@ -936,13 +941,13 @@
               "datasource": { "type": "prometheus", "uid": "${datasource}" },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}",
+              "expr": "(\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", exported_pod!=\"\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", exported_pod!=\"\"})\n  , 1)\n) * 100",
               "legendFormat": "{{exported_pod}} @ {{Hostname}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Pod Bazlı Bellek (MiB)",
+          "title": "Pod Bazlı Bellek (%)",
           "type": "timeseries"
         }
       ],
@@ -1334,7 +1339,7 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "description": "GPU bellek kullanımı (MiB)",
+      "description": "GPU bellek kullanım yüzdesi",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -1357,16 +1362,21 @@
             "showPoints": "never",
             "spanNulls": false,
             "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "thresholdsStyle": { "mode": "line+area" }
           },
           "mappings": [],
           "min": 0,
+          "max": 100,
           "noValue": "0",
           "thresholds": {
             "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "rgba(255, 255, 0, 0.08)", "value": 70 },
+              { "color": "rgba(255, 0, 0, 0.08)", "value": 90 }
+            ]
           },
-          "unit": "mibytes"
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -1381,13 +1391,13 @@
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"}",
+          "expr": "(\n  DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{UUID=~\"$gpu_uuid\"}\n    or\n    (DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"} + DCGM_FI_DEV_FB_FREE{UUID=~\"$gpu_uuid\"})\n  , 1)\n) * 100",
           "legendFormat": "{{exported_pod}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Kullanılan Bellek (MiB)",
+      "title": "Bellek Kullanımı (%)",
       "type": "timeseries"
     },
     {
@@ -1544,8 +1554,8 @@
     "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
-  "title": "GPU İzleme - Production v6",
-  "uid": "gpu-monitoring-prod-v6",
-  "version": 6,
+  "title": "GPU İzleme - Production v7",
+  "uid": "gpu-monitoring-prod-v7",
+  "version": 7,
   "weekStart": ""
 }
