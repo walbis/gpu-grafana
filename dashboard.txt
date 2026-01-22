@@ -662,7 +662,28 @@
           },
           "unit": "watt"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Kapasite %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 4,
@@ -697,12 +718,25 @@
           "exemplar": false,
           "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"})) or vector(0)",
           "instant": false,
-          "legendFormat": "Güç",
+          "legendFormat": "Watt",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))\n/\nclamp_min(sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"})), 1)\n* 100",
+          "instant": false,
+          "legendFormat": "Kapasite %",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Guc Tuketimi (Anlik / Ort / Maks)",
+      "title": "Guc Tuketimi (W / %)",
       "type": "stat"
     },
     {
@@ -1310,7 +1344,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Toplam"
+                  "options": "Toplam W"
                 },
                 "properties": [
                   {
@@ -1327,6 +1361,48 @@
                   {
                     "id": "custom.fillOpacity",
                     "value": 0
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Toplam %"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "max",
+                    "value": 100
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [10, 10],
+                      "fill": "dash"
+                    }
                   }
                 ]
               }
@@ -1363,9 +1439,21 @@
               "editorMode": "code",
               "exemplar": false,
               "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))",
-              "legendFormat": "Toplam",
+              "legendFormat": "Toplam W",
               "range": true,
               "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))\n/\nclamp_min(sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"})), 1)\n* 100",
+              "legendFormat": "Toplam %",
+              "range": true,
+              "refId": "C"
             },
             {
               "datasource": {
@@ -1380,7 +1468,7 @@
               "refId": "B"
             }
           ],
-          "title": "Guc Tuketimi Trendi",
+          "title": "Guc Tuketimi Trendi (W / %)",
           "type": "timeseries"
         }
       ],
@@ -2923,8 +3011,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v15",
-  "uid": "gpu-monitoring-prod-v15",
-  "version": 15,
+  "title": "GPU Izleme - Production v16",
+  "uid": "gpu-monitoring-prod-v16",
+  "version": 16,
   "weekStart": ""
 }
