@@ -1470,6 +1470,122 @@
           ],
           "title": "Guc Tuketimi Trendi (W / %)",
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "GPU toplam enerji tüketimi (Watt-saat). Son 1 saat ve 24 saatteki tüketimi gösterir.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "fieldMinMax": true,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5000
+                  },
+                  {
+                    "color": "red",
+                    "value": 10000
+                  }
+                ]
+              },
+              "unit": "watth"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Son 24 Saat"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 120000
+                        },
+                        {
+                          "color": "red",
+                          "value": 150000
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 28
+          },
+          "id": 318,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(increase(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{Hostname=~\"$hostname\"}[1h])) / 3600000",
+              "instant": false,
+              "legendFormat": "Son 1 Saat",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(increase(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{Hostname=~\"$hostname\"}[24h])) / 3600000",
+              "instant": false,
+              "legendFormat": "Son 24 Saat",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Enerji Tuketimi (Wh)",
+          "type": "stat"
         }
       ],
       "title": "Sicaklik ve Guc Trendleri",
@@ -1644,7 +1760,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Pod bazinda GPU bellek kullanımı (stacked). Beyaz kesikli çizgi toplam kapasiteyi gösterir.",
+          "description": "MIG aktif GPU'larda pod bazlı, MIG pasif GPU'larda cihaz bazlı bellek kullanımı. MIG instance'ları '(MIG)' etiketi ile pod ismiyle, normal GPU'lar '(GPU)' etiketi ile hostname ile gösterilir.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1772,10 +1888,22 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "(\n  sum by (exported_pod) (\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    * on(UUID, GPU_I_ID) group_left(exported_pod)\n    (max by (UUID, GPU_I_ID, exported_pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}) * 0 + 1)\n  )\n  /\n  clamp_min(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    )\n  , 1)\n) * 100",
-              "legendFormat": "{{exported_pod}}",
+              "expr": "(\n  max by (UUID, GPU_I_ID, Hostname, exported_pod) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\", exported_pod!=\"\"})\n  /\n  clamp_min(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    )\n  , 1)\n) * 100",
+              "legendFormat": "{{exported_pod}} (MIG)",
               "range": true,
-              "refId": "A"
+              "refId": "mig_pods"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "(\n  max by (UUID, Hostname) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID=\"\"})\n  /\n  clamp_min(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    )\n  , 1)\n) * 100",
+              "legendFormat": "{{Hostname}} (GPU)",
+              "range": true,
+              "refId": "non_mig_gpus"
             },
             {
               "datasource": {
@@ -1787,14 +1915,14 @@
               "expr": "vector(100)",
               "legendFormat": "Toplam Kapasite",
               "range": true,
-              "refId": "B"
+              "refId": "capacity"
             }
           ],
-          "title": "Pod Bazli Bellek (%)",
+          "title": "Bellek Kullanimi (%)",
           "type": "timeseries"
         }
       ],
-      "title": "Pod Bazli Detay",
+      "title": "Pod ve GPU Detay",
       "type": "row"
     },
     {
@@ -2781,8 +2909,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v29",
-  "uid": "gpu-monitoring-prod-v29",
-  "version": 29,
+  "title": "GPU Izleme - Production v32",
+  "uid": "gpu-monitoring-prod-v32",
+  "version": 32,
   "weekStart": ""
 }
