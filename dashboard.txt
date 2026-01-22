@@ -2287,72 +2287,28 @@
               }
             },
             {
+              "id": "filterFieldsByName",
+              "options": {
+                "include": {
+                  "names": [
+                    "gpu_key",
+                    "GPU_I_PROFILE",
+                    "exported_pod",
+                    "Value #util",
+                    "Value #mem",
+                    "Value #memused",
+                    "Value #memcap",
+                    "Value #temp",
+                    "Value #power"
+                  ]
+                }
+              }
+            },
+            {
               "id": "organize",
               "options": {
                 "excludeByName": {
-                  "Time": true,
-                  "Time 1": true,
-                  "Time 2": true,
-                  "Time 3": true,
-                  "Time 4": true,
-                  "Time 5": true,
-                  "Time 6": true,
-                  "Time 7": true,
-                  "Time 8": true,
-                  "Time 9": true,
-                  "Time 10": true,
-                  "Time 11": true,
-                  "Time 12": true,
-                  "GPU_I_ID": true,
-                  "GPU_I_ID 1": true,
-                  "GPU_I_ID 2": true,
-                  "GPU_I_ID 3": true,
-                  "GPU_I_ID 4": true,
-                  "GPU_I_ID 5": true,
-                  "GPU_I_ID 6": true,
-                  "GPU_I_ID 7": true,
-                  "GPU_I_ID 8": true,
-                  "GPU_I_ID 9": true,
-                  "GPU_I_ID 10": true,
-                  "GPU_I_ID 11": true,
-                  "GPU_I_ID 12": true,
-                  "UUID": true,
-                  "UUID 1": true,
-                  "UUID 2": true,
-                  "UUID 3": true,
-                  "UUID 4": true,
-                  "UUID 5": true,
-                  "UUID 6": true,
-                  "UUID 7": true,
-                  "UUID 8": true,
-                  "UUID 9": true,
-                  "UUID 10": true,
-                  "UUID 11": true,
-                  "UUID 12": true,
-                  "gpu": true,
-                  "gpu 1": true,
-                  "modelName": true,
-                  "modelName 1": true,
-                  "Hostname": true,
-                  "Hostname 1": true,
-                  "GPU_I_PROFILE 1": true,
-                  "GPU_I_PROFILE 2": true,
-                  "GPU_I_PROFILE 3": true,
-                  "GPU_I_PROFILE 4": true,
-                  "GPU_I_PROFILE 5": true,
-                  "GPU_I_PROFILE 6": true,
-                  "GPU_I_PROFILE 7": true,
-                  "GPU_I_PROFILE 8": true,
-                  "GPU_I_PROFILE 9": true,
-                  "GPU_I_PROFILE 10": true,
-                  "GPU_I_PROFILE 11": true,
-                  "GPU_I_PROFILE 12": true,
-                  "exported_pod 1": true,
-                  "exported_pod 2": true,
-                  "exported_pod 3": true,
-                  "exported_pod 4": true,
-                  "exported_pod 5": true,
-                  "exported_pod 6": true
+                  "gpu_key": true
                 },
                 "indexByName": {
                   "GPU_I_PROFILE": 0,
@@ -2362,7 +2318,8 @@
                   "Value #memused": 4,
                   "Value #memcap": 5,
                   "Value #temp": 6,
-                  "Value #power": 7
+                  "Value #power": 7,
+                  "gpu_key": 8
                 },
                 "renameByName": {
                   "GPU_I_PROFILE": "MIG Profil",
@@ -3059,8 +3016,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v25",
-  "uid": "gpu-monitoring-prod-v25",
-  "version": 25,
+  "title": "GPU Izleme - Production v26",
+  "uid": "gpu-monitoring-prod-v26",
+  "version": 26,
   "weekStart": ""
 }
