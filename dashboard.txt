@@ -1937,58 +1937,6 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Guc %"
-                },
-                "properties": [
-                  {
-                    "id": "unit",
-                    "value": "percent"
-                  },
-                  {
-                    "id": "decimals",
-                    "value": 0
-                  },
-                  {
-                    "id": "max",
-                    "value": 100
-                  },
-                  {
-                    "id": "min",
-                    "value": 0
-                  },
-                  {
-                    "id": "thresholds",
-                    "value": {
-                      "mode": "absolute",
-                      "steps": [
-                        {
-                          "color": "green",
-                          "value": null
-                        },
-                        {
-                          "color": "yellow",
-                          "value": 70
-                        },
-                        {
-                          "color": "red",
-                          "value": 90
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "id": "custom.cellOptions",
-                    "value": {
-                      "mode": "gradient",
-                      "type": "gauge",
-                      "valueDisplayMode": "text"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
                   "options": "Kapasite GB"
                 },
                 "properties": [
@@ -2061,7 +2009,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\n  max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, exported_pod, UUID) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n  ) * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "expr": "(\n  label_join(\n    max by (modelName, GPU_I_PROFILE, UUID, GPU_I_ID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    ) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    label_replace(\n      avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n      \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n    ),\n    \"modelName\", \"TOPLAM\", \"\", \"\"\n  )\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2075,7 +2023,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n  /\n  clamp_min(\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    ), 1\n  ) * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "expr": "(\n  label_join(\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    /\n    clamp_min(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    , 1) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n    /\n    clamp_min(\n      sum(\n        max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n        or\n        (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n      )\n    , 1) * 100,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  )\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -2090,37 +2038,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"})\n  /\n  clamp_min(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"}), 1)\n  * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "power"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_join(\n  (\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n    or\n    (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n  ) / 1024,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "memcap"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) / 1024,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "expr": "(\n  label_join(\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) / 1024,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})) / 1024,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  )\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -2135,73 +2053,13 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_replace(\n  label_replace(\n    avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  ),\n  \"exported_pod\", \"TOPLAM\", \"\", \"\"\n)",
+              "expr": "(\n  label_join(\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    ) / 1024,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    ) / 1024,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  )\n)",
               "format": "table",
               "hide": false,
               "instant": true,
               "legendFormat": "__auto",
               "range": false,
-              "refId": "total_util"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_replace(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n  /\n  clamp_min(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    )\n  , 1) * 100,\n  \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "total_mem"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_replace(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))\n  /\n  clamp_min(\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"}))\n  , 1) * 100,\n  \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "total_power"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_replace(\n  sum(\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n    or\n    (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n  ) / 1024,\n  \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "total_memcap"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_replace(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})) / 1024,\n  \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "total_memused"
+              "refId": "memcap"
             }
           ],
           "title": "GPU Detay Tablosu",
@@ -2214,35 +2072,29 @@
               }
             },
             {
-              "id": "filterFieldsByName",
-              "options": {
-                "include": {
-                  "pattern": "^(gpu_key|exported_pod|Value #(util|mem|memused|memcap|power|total_util|total_mem|total_memused|total_memcap|total_power))$"
-                }
-              }
-            },
-            {
               "id": "organize",
               "options": {
                 "excludeByName": {
-                  "gpu_key": true
+                  "gpu_key": true,
+                  "Time": true,
+                  "UUID": true,
+                  "GPU_I_ID": true
                 },
                 "indexByName": {
-                  "exported_pod": 0,
-                  "Value #util": 1,
-                  "Value #mem": 2,
-                  "Value #memused": 3,
-                  "Value #memcap": 4,
-                  "Value #power": 5,
-                  "gpu_key": 6
+                  "modelName": 0,
+                  "GPU_I_PROFILE": 1,
+                  "Value #util": 2,
+                  "Value #mem": 3,
+                  "Value #memused": 4,
+                  "Value #memcap": 5
                 },
                 "renameByName": {
-                  "exported_pod": "Pod",
+                  "modelName": "Model",
+                  "GPU_I_PROFILE": "MIG Profil",
                   "Value #util": "Kullanim %",
                   "Value #mem": "Bellek %",
                   "Value #memused": "Kullanim GB",
-                  "Value #memcap": "Kapasite GB",
-                  "Value #power": "Guc %"
+                  "Value #memcap": "Kapasite GB"
                 }
               }
             }
@@ -2929,8 +2781,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v27",
-  "uid": "gpu-monitoring-prod-v27",
-  "version": 27,
+  "title": "GPU Izleme - Production v28",
+  "uid": "gpu-monitoring-prod-v28",
+  "version": 28,
   "weekStart": ""
 }
