@@ -235,7 +235,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\", exported_pod!=\"\"})) or vector(0)",
+          "expr": "count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\", pod!=\"\"})) or vector(0)",
           "instant": true,
           "legendFormat": "Kullanımda",
           "range": false,
@@ -1618,8 +1618,8 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "clamp_max(\n  max by (exported_pod) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  ) * 100,\n  100\n)",
-              "legendFormat": "{{exported_pod}}",
+              "expr": "clamp_max(\n  max by (pod) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", pod!=\"\"}\n  ) * 100,\n  100\n)",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             },
@@ -1772,8 +1772,8 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (exported_pod) (\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", exported_pod!=\"\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", exported_pod!=\"\"})\n  , 1)\n) * 100",
-              "legendFormat": "{{exported_pod}}",
+              "expr": "max by (pod) (\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", pod!=\"\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", pod!=\"\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", pod!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", pod!=\"\"})\n  , 1)\n) * 100",
+              "legendFormat": "{{pod}}",
               "range": true,
               "refId": "A"
             },
@@ -2088,7 +2088,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_replace(\n  label_join(\n    max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, exported_pod, UUID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    ) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  ),\n  \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n)",
+              "expr": "label_replace(\n  label_join(\n    max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, pod, UUID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    ) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  ),\n  \"deployment\", \"$1\", \"pod\", \"^(.+)-[^-]+-[^-]+$\"\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2186,7 +2186,7 @@
                   "UUID 3": true,
                   "UUID 4": true,
                   "gpu": true,
-                  "exported_pod": true
+                  "pod": true
                 },
                 "indexByName": {
                   "modelName": 0,
@@ -2352,7 +2352,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "exported_pod"
+              "options": "pod"
             },
             "properties": [
               {
@@ -2386,7 +2386,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, exported_pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{UUID=~\"$gpu_uuid\"})",
+          "expr": "max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{UUID=~\"$gpu_uuid\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -2405,7 +2405,7 @@
               "Hostname": 2,
               "GPU_I_ID": 3,
               "GPU_I_PROFILE": 4,
-              "exported_pod": 5,
+              "pod": 5,
               "Value": 6,
               "Time": 7
             }
@@ -2515,7 +2515,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "clamp_max(avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{UUID=~\"$gpu_uuid\"}[$__rate_interval]) * 100, 100)",
-          "legendFormat": "{{exported_pod}}",
+          "legendFormat": "{{pod}}",
           "range": true,
           "refId": "A"
         }
@@ -2624,7 +2624,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "(\n  DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{UUID=~\"$gpu_uuid\"}\n    or\n    (DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"} + DCGM_FI_DEV_FB_FREE{UUID=~\"$gpu_uuid\"})\n  , 1)\n) * 100",
-          "legendFormat": "{{exported_pod}}",
+          "legendFormat": "{{pod}}",
           "range": true,
           "refId": "A"
         }
@@ -2895,8 +2895,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v18",
-  "uid": "gpu-monitoring-prod-v18",
-  "version": 18,
+  "title": "GPU Izleme - Production v19",
+  "uid": "gpu-monitoring-prod-v19",
+  "version": 19,
   "weekStart": ""
 }
