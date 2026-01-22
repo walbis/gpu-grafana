@@ -1825,7 +1825,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Kullanım"
+                  "options": "Kullanim %"
                 },
                 "properties": [
                   {
@@ -1929,7 +1929,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Sıcaklık"
+                  "options": "Sicaklik"
                 },
                 "properties": [
                   {
@@ -1976,7 +1976,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Güç"
+                  "options": "Guc W"
                 },
                 "properties": [
                   {
@@ -1986,6 +1986,57 @@
                   {
                     "id": "custom.width",
                     "value": 80
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 150
+                        },
+                        {
+                          "color": "orange",
+                          "value": 250
+                        },
+                        {
+                          "color": "red",
+                          "value": 300
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "basic",
+                      "type": "color-background"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Kapasite GB"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "decgbytes"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 100
                   }
                 ]
               },
@@ -2004,7 +2055,7 @@
             ]
           },
           "gridPos": {
-            "h": 12,
+            "h": 20,
             "w": 24,
             "x": 0,
             "y": 22
@@ -2032,7 +2083,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\n  max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, exported_pod, UUID) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n  ) * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "expr": "label_replace(\n  label_join(\n    max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, exported_pod, UUID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    ) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  ),\n  \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2083,6 +2134,21 @@
               "legendFormat": "__auto",
               "range": false,
               "refId": "power"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  ) / 1024,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "memcap"
             }
           ],
           "title": "GPU Detay Tablosu",
@@ -2103,37 +2169,41 @@
                   "Time 2": true,
                   "Time 3": true,
                   "Time 4": true,
+                  "Time 5": true,
+                  "GPU_I_ID": true,
                   "GPU_I_ID 1": true,
                   "GPU_I_ID 2": true,
                   "GPU_I_ID 3": true,
+                  "GPU_I_ID 4": true,
                   "UUID": true,
                   "UUID 1": true,
                   "UUID 2": true,
-                  "UUID 3": true
+                  "UUID 3": true,
+                  "UUID 4": true,
+                  "gpu": true,
+                  "exported_pod": true
                 },
                 "indexByName": {
-                  "gpu": 0,
-                  "modelName": 1,
-                  "Hostname": 2,
-                  "GPU_I_ID": 3,
-                  "GPU_I_PROFILE": 4,
-                  "exported_pod": 5,
-                  "Value #util": 6,
-                  "Value #mem": 7,
-                  "Value #temp": 8,
-                  "Value #power": 9
+                  "modelName": 0,
+                  "Hostname": 1,
+                  "GPU_I_PROFILE": 2,
+                  "deployment": 3,
+                  "Value #util": 4,
+                  "Value #mem": 5,
+                  "Value #memcap": 6,
+                  "Value #temp": 7,
+                  "Value #power": 8
                 },
                 "renameByName": {
-                  "gpu": "GPU",
                   "modelName": "Model",
                   "Hostname": "Node",
-                  "GPU_I_ID": "MIG",
-                  "GPU_I_PROFILE": "Profil",
-                  "exported_pod": "Pod",
-                  "Value #util": "Kullanım",
+                  "GPU_I_PROFILE": "MIG Profil",
+                  "deployment": "Deployment",
+                  "Value #util": "Kullanim %",
                   "Value #mem": "Bellek %",
-                  "Value #temp": "Sıcaklık",
-                  "Value #power": "Güç"
+                  "Value #memcap": "Kapasite GB",
+                  "Value #temp": "Sicaklik",
+                  "Value #power": "Guc W"
                 }
               }
             }
@@ -2844,8 +2914,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v13",
-  "uid": "gpu-monitoring-prod-v13",
-  "version": 13,
+  "title": "GPU Izleme - Production v14",
+  "uid": "gpu-monitoring-prod-v14",
+  "version": 14,
   "weekStart": ""
 }
