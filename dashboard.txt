@@ -1530,7 +1530,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "clamp_max(\n  sum by (deployment) (\n    label_replace(\n      avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}[$__rate_interval]),\n      \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n    )\n  ) * 100,\n  100\n)",
+              "expr": "(\n  count by (deployment) (\n    label_replace(\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"},\n      \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n    )\n  )\n  *\n  clamp_max(\n    avg by (deployment) (\n      label_replace(\n        DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"},\n        \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n      )\n    ),\n    1\n  )\n)\n/\ncount(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n* 100",
               "legendFormat": "{{deployment}}",
               "range": true,
               "refId": "A"
@@ -1542,7 +1542,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})) * 100 / clamp_min(count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})), 1)",
+              "expr": "vector(100)",
               "legendFormat": "Toplam Kapasite",
               "range": true,
               "refId": "B"
@@ -1684,7 +1684,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum by (deployment) (\n  label_replace(\n    DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"},\n    \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n  )\n)\n/\nclamp_min(\n  sum(max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )),\n  1\n) * 100",
+              "expr": "sum by (deployment) (\n  label_replace(\n    DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"},\n    \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n  )\n)\n/\nsum(\n  max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )\n)\n* 100",
               "legendFormat": "{{deployment}}",
               "range": true,
               "refId": "A"
@@ -2844,8 +2844,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v10",
-  "uid": "gpu-monitoring-prod-v10",
-  "version": 10,
+  "title": "GPU Izleme - Production v11",
+  "uid": "gpu-monitoring-prod-v11",
+  "version": 11,
   "weekStart": ""
 }
