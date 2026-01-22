@@ -1,113 +1,194 @@
-# GPU Monitoring Dashboard - Kullanilan DCGM Metrikleri
-# =====================================================
-# Bu dashboard'da kullanilan tum NVIDIA DCGM metriklerinin listesi
+# GPU Monitoring Dashboard - DCGM Metrikleri
+# ============================================
+# DCGM Version: 4.2.3 ile uyumlu
+# Kaynak: https://github.com/NVIDIA/DCGM/blob/master/dcgmlib/dcgm_fields.h
 
-## TEMEL METRIKLER (Zorunlu)
-## -------------------------
+## METRIK DURUMU OZETI
+## ===================
 
-DCGM_FI_DEV_GPU_TEMP
+| Metrik                        | Field ID | DCGM'de Var | Exporter Default | Dashboard'da |
+|-------------------------------|----------|-------------|------------------|--------------|
+| DCGM_FI_DEV_GPU_TEMP          | 50       | ✅          | ✅               | ✅           |
+| DCGM_FI_DEV_FB_USED           | 252      | ✅          | ✅               | ✅           |
+| DCGM_FI_DEV_FB_FREE           | 251      | ✅          | ✅               | ✅           |
+| DCGM_FI_DEV_FB_TOTAL          | 250      | ✅          | ❌ EKLE          | ✅           |
+| DCGM_FI_DEV_POWER_USAGE       | 155      | ✅          | ✅               | ✅           |
+| DCGM_FI_DEV_POWER_MGMT_LIMIT  | 160      | ✅          | ❌ EKLE          | ✅           |
+| DCGM_FI_DEV_XID_ERRORS        | 230      | ✅          | ✅               | ✅           |
+| DCGM_FI_DEV_ECC_DBE_VOL_TOTAL | 311      | ✅          | ❌ EKLE          | ✅           |
+| DCGM_FI_PROF_GR_ENGINE_ACTIVE | 1001     | ✅          | ✅               | ✅           |
+| DCGM_FI_PROF_SM_ACTIVE        | 1002     | ✅          | ❌ EKLE          | ✅           |
+| DCGM_FI_PROF_SM_OCCUPANCY     | 1003     | ✅          | ❌ EKLE          | ✅           |
+| DCGM_FI_DEV_GPU_UTIL          | 203      | ✅          | ✅               | Fallback     |
+
+
+## DCGM-EXPORTER YAPILANDIRMASI
+## ============================
+
+Asagidaki metrikleri dcgm-exporter'a eklemeniz gerekiyor.
+
+### Adim 1: Custom metrics dosyasi olustur
+
+Dosya: /etc/dcgm-exporter/custom-metrics.csv
+
+```csv
+# Bellek Kapasitesi
+DCGM_FI_DEV_FB_TOTAL, gauge, Total framebuffer memory (MB)
+
+# Guc Limiti (dinamik % hesaplamasi icin)
+DCGM_FI_DEV_POWER_MGMT_LIMIT, gauge, Power management limit (W)
+
+# ECC Hatalari
+DCGM_FI_DEV_ECC_DBE_VOL_TOTAL, gauge, Total double-bit ECC errors
+
+# SM Metrikleri (profiling)
+DCGM_FI_PROF_SM_ACTIVE, gauge, SM active ratio
+DCGM_FI_PROF_SM_OCCUPANCY, gauge, SM occupancy ratio
+```
+
+### Adim 2: dcgm-exporter'i yeniden baslat
+
+Kubernetes:
+```bash
+kubectl rollout restart daemonset dcgm-exporter -n gpu-operator
+```
+
+Docker:
+```bash
+docker restart dcgm-exporter
+```
+
+### Adim 3: Metrikleri dogrula
+
+```bash
+curl -s localhost:9400/metrics | grep -E "DCGM_FI_DEV_FB_TOTAL|DCGM_FI_DEV_POWER_MGMT_LIMIT"
+```
+
+
+## DETAYLI METRIK ACIKLAMALARI
+## ===========================
+
+### TEMEL METRIKLER (Varsayilan Aktif)
+
+DCGM_FI_DEV_GPU_TEMP (Field ID: 50)
   - Aciklama: GPU sicakligi (Celsius)
+  - Tip: gauge
   - Kullanim: Sicaklik gauge, trend, tablo
   - Threshold: 75C (sari), 83C (turuncu), 90C (kirmizi)
 
-DCGM_FI_DEV_FB_USED
+DCGM_FI_DEV_FB_USED (Field ID: 252)
   - Aciklama: Kullanilan GPU bellegi (MiB)
+  - Tip: gauge
   - Kullanim: Bellek gauge, trend, tablo, pod bazli chart
 
-DCGM_FI_DEV_FB_FREE
+DCGM_FI_DEV_FB_FREE (Field ID: 251)
   - Aciklama: Bos GPU bellegi (MiB)
+  - Tip: gauge
   - Kullanim: FB_TOTAL fallback hesaplamasi
 
-DCGM_FI_DEV_FB_TOTAL
-  - Aciklama: Toplam GPU bellegi (MiB)
-  - Kullanim: Bellek yuzde hesaplamasi, kapasite
-  - Not: Bazi sistemlerde mevcut olmayabilir (FB_USED + FB_FREE fallback)
-
-DCGM_FI_DEV_POWER_USAGE
+DCGM_FI_DEV_POWER_USAGE (Field ID: 155)
   - Aciklama: Anlik guc tuketimi (Watt)
+  - Tip: gauge
   - Kullanim: Guc gauge, trend, tablo
 
-DCGM_FI_DEV_XID_ERRORS
+DCGM_FI_DEV_XID_ERRORS (Field ID: 230)
   - Aciklama: XID hata sayaci
+  - Tip: gauge
   - Kullanim: Hata sayisi (son 1 saatteki artis)
 
-DCGM_FI_DEV_ECC_DBE_VOL_TOTAL
-  - Aciklama: ECC Double-Bit Error sayisi
-  - Kullanim: Kritik hata gostergesi
-
-
-## PROFILING METRIKLERI (Opsiyonel - Profiling Collector Gerektirir)
-## -----------------------------------------------------------------
-
-DCGM_FI_PROF_GR_ENGINE_ACTIVE
+DCGM_FI_PROF_GR_ENGINE_ACTIVE (Field ID: 1001)
   - Aciklama: Graphics Engine kullanim orani (0-1)
-  - Kullanim: Ana GPU kullanim gostergesi, trend, tablo
-  - Not: Profiling collector aktif olmalidir
-  - Alternatif: DCGM_FI_DEV_GPU_UTIL (daha az hassas)
-
-DCGM_FI_PROF_SM_ACTIVE
-  - Aciklama: SM (Streaming Multiprocessor) aktiflik orani (0-1)
-  - Kullanim: SM Active gauge
-  - Not: Profiling collector aktif olmalidir
-
-DCGM_FI_PROF_SM_OCCUPANCY
-  - Aciklama: SM doluluk orani (0-1)
-  - Kullanim: SM Occupancy gauge
+  - Tip: gauge (profiling)
+  - Kullanim: Ana GPU kullanim gostergesi
   - Not: Profiling collector aktif olmalidir
 
 
-## GUC LIMITI METRIGI (Opsiyonel - Dinamik Guc Yuzdeligi Icin)
-## ----------------------------------------------------------
+### EKLENMESI GEREKEN METRIKLER
 
-DCGM_FI_DEV_POWER_MGMT_LIMIT
+DCGM_FI_DEV_FB_TOTAL (Field ID: 250)
+  - Aciklama: Toplam GPU bellegi (MiB)
+  - Tip: gauge
+  - Kullanim: Bellek yuzde hesaplamasi, kapasite sutunu
+  - Fallback: FB_USED + FB_FREE
+
+DCGM_FI_DEV_POWER_MGMT_LIMIT (Field ID: 160)
   - Aciklama: GPU guc yonetim limiti (Watt)
+  - Tip: gauge
   - Kullanim: Guc tuketimi yuzde hesaplamasi
-  - Not: Mevcut degilse guc yalnizca Watt olarak gosterilir
-  - Alternatifler: DCGM_FI_DEV_ENFORCED_POWER_LIMIT, DCGM_FI_DEV_POWER_LIMIT
+  - Onemli: Bu olmadan guc % gosterilmez!
+  - Alternatif: DCGM_FI_DEV_ENFORCED_POWER_LIMIT (164)
+
+DCGM_FI_DEV_ECC_DBE_VOL_TOTAL (Field ID: 311)
+  - Aciklama: Toplam double-bit ECC hata sayisi
+  - Tip: gauge
+  - Kullanim: Kritik bellek hatasi gostergesi
+
+DCGM_FI_PROF_SM_ACTIVE (Field ID: 1002)
+  - Aciklama: SM aktiflik orani (0-1)
+  - Tip: gauge (profiling)
+  - Kullanim: SM Active gauge
+
+DCGM_FI_PROF_SM_OCCUPANCY (Field ID: 1003)
+  - Aciklama: SM doluluk orani (0-1)
+  - Tip: gauge (profiling)
+  - Kullanim: SM Occupancy gauge
 
 
 ## LABEL'LAR
-## ---------
+## =========
 
-Hostname       - Node/sunucu ismi
-UUID           - GPU benzersiz tanimlayicisi
-GPU_I_ID       - MIG instance ID (MIG aktifse)
-GPU_I_PROFILE  - MIG profil ismi (ornek: 1g.5gb)
-exported_pod   - Kubernetes pod ismi
-gpu            - GPU index numarasi (0, 1, 2, ...)
-modelName      - GPU model ismi (ornek: NVIDIA H100 80GB HBM3)
+| Label          | Aciklama                                    |
+|----------------|---------------------------------------------|
+| Hostname       | Node/sunucu ismi                            |
+| UUID           | GPU benzersiz tanimlayicisi                 |
+| GPU_I_ID       | MIG instance ID (MIG aktifse)               |
+| GPU_I_PROFILE  | MIG profil ismi (ornek: 1g.5gb)             |
+| exported_pod   | Kubernetes pod ismi                         |
+| gpu            | GPU index numarasi (0, 1, 2, ...)           |
+| modelName      | GPU model ismi (NVIDIA H100 80GB HBM3)      |
 
 
 ## PROMETHEUS KONTROL SORGULARI
-## ----------------------------
+## ============================
 
 # Tum DCGM metriklerini listele:
 {__name__=~"DCGM_FI_.*"}
 
+# Mevcut metrikleri say:
+count({__name__=~"DCGM_FI_.*"}) by (__name__)
+
 # Temel metriklerin varligini kontrol et:
-count(DCGM_FI_DEV_GPU_TEMP)
-count(DCGM_FI_DEV_FB_USED)
-count(DCGM_FI_DEV_POWER_USAGE)
+count(DCGM_FI_DEV_GPU_TEMP)          # Olmali
+count(DCGM_FI_DEV_FB_USED)           # Olmali
+count(DCGM_FI_DEV_POWER_USAGE)       # Olmali
 
-# Profiling metriklerini kontrol et:
-count(DCGM_FI_PROF_GR_ENGINE_ACTIVE)
-count(DCGM_FI_PROF_SM_ACTIVE)
-
-# Guc limiti metrigini kontrol et:
-count(DCGM_FI_DEV_POWER_MGMT_LIMIT)
-
-# Alternatif guc limit metriklerini ara:
-{__name__=~"DCGM.*POWER.*LIMIT.*"}
+# Eklenmesi gereken metrikleri kontrol et:
+count(DCGM_FI_DEV_FB_TOTAL)          # Yoksa ekle
+count(DCGM_FI_DEV_POWER_MGMT_LIMIT)  # Yoksa ekle (guc % icin gerekli!)
+count(DCGM_FI_PROF_SM_ACTIVE)        # Yoksa ekle
+count(DCGM_FI_PROF_SM_OCCUPANCY)     # Yoksa ekle
+count(DCGM_FI_DEV_ECC_DBE_VOL_TOTAL) # Yoksa ekle
 
 
 ## GPU MODELLERI VE TDP DEGERLERI
-## ------------------------------
+## ==============================
 
-H100 SXM (HBM3)  : 700W TDP
-H100 NVL         : 400W TDP (cift GPU paketi icin 800W)
-H200             : 700W TDP
-A100 SXM         : 400W TDP
-A100 PCIe        : 250W TDP
-V100             : 250-300W TDP
-T4               : 70W TDP
-A10              : 150W TDP
+| Model            | TDP      | POWER_MGMT_LIMIT Beklenen |
+|------------------|----------|---------------------------|
+| H100 SXM (HBM3)  | 700W     | 700                       |
+| H100 NVL         | 400W     | 400 (cift icin 800W)      |
+| H200             | 700W     | 700                       |
+| A100 SXM         | 400W     | 400                       |
+| A100 PCIe        | 250W     | 250                       |
+| V100             | 250-300W | 250-300                   |
+| T4               | 70W      | 70                        |
+| A10              | 150W     | 150                       |
+
+
+## KAYNAKLAR
+## =========
+
+- DCGM Field IDs: https://docs.nvidia.com/datacenter/dcgm/latest/dcgm-api/dcgm-api-field-ids.html
+- DCGM Source: https://github.com/NVIDIA/DCGM/blob/master/dcgmlib/dcgm_fields.h
+- DCGM Exporter: https://github.com/NVIDIA/dcgm-exporter
+- Default Metrics: https://github.com/NVIDIA/dcgm-exporter/blob/main/etc/dcp-metrics-included.csv
