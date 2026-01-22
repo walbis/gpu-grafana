@@ -626,7 +626,7 @@
           "refId": "A"
         }
       ],
-      "title": "GPU Sicaklik",
+      "title": "GPU Sicaklik (Anlik / Ort / Maks)",
       "type": "stat"
     },
     {
@@ -702,7 +702,7 @@
           "refId": "A"
         }
       ],
-      "title": "Toplam Guc Tuketimi",
+      "title": "Guc Tuketimi (Anlik / Ort / Maks)",
       "type": "stat"
     },
     {
@@ -2844,8 +2844,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v11",
-  "uid": "gpu-monitoring-prod-v11",
-  "version": 11,
+  "title": "GPU Izleme - Production v12",
+  "uid": "gpu-monitoring-prod-v12",
+  "version": 12,
   "weekStart": ""
 }
