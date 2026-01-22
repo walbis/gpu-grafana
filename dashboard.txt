@@ -61,7 +61,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -125,7 +125,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -189,7 +189,7 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -259,7 +259,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -335,7 +335,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -411,7 +411,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -487,7 +487,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -562,7 +562,7 @@
           },
           "mappings": [],
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -642,7 +642,7 @@
           },
           "mappings": [],
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "percentage",
             "steps": [
@@ -728,7 +728,7 @@
               "type": "value"
             }
           ],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -847,7 +847,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -992,7 +992,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1146,7 +1146,7 @@
               },
               "mappings": [],
               "min": 0,
-              "noValue": "0",
+              "noValue": "-",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -1294,7 +1294,7 @@
               },
               "mappings": [],
               "min": 0,
-              "noValue": "0",
+              "noValue": "-",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -1445,7 +1445,7 @@
               "mappings": [],
               "max": 100,
               "min": 0,
-              "noValue": "0",
+              "noValue": "-",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -1598,7 +1598,7 @@
               },
               "mappings": [],
               "min": 0,
-              "noValue": "0",
+              "noValue": "-",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -2013,8 +2013,8 @@
           "options": {
             "cellHeight": "sm",
             "footer": {
-              "enablePagination": true,
-              "show": true
+              "enablePagination": false,
+              "show": false
             },
             "showHeader": true,
             "sortBy": [
@@ -2411,7 +2411,7 @@
           "mappings": [],
           "max": 100,
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -2520,7 +2520,7 @@
           "mappings": [],
           "min": 0,
           "max": 100,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -2628,7 +2628,7 @@
           },
           "mappings": [],
           "min": 0,
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -2844,8 +2844,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v12",
-  "uid": "gpu-monitoring-prod-v12",
-  "version": 12,
+  "title": "GPU Izleme - Production v13",
+  "uid": "gpu-monitoring-prod-v13",
+  "version": 13,
   "weekStart": ""
 }
