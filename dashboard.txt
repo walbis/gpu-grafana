@@ -1490,7 +1490,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Deployment bazında GPU kullanım yüzdesi (stacked). Toplam kapasite çizgisi üstte gösterilir.",
+          "description": "Pod bazinda GPU kullanım yüzdesi (stacked). Toplam kapasite çizgisi üstte gösterilir.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1618,8 +1618,8 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "(\n  count by (deployment) (\n    label_replace(\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"},\n      \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n    )\n  )\n  *\n  clamp_max(\n    avg by (deployment) (\n      label_replace(\n        DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"},\n        \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n      )\n    ),\n    1\n  )\n)\n/\ncount(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n* 100",
-              "legendFormat": "{{deployment}}",
+              "expr": "clamp_max(\n  max by (exported_pod) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  ) * 100,\n  100\n)",
+              "legendFormat": "{{exported_pod}}",
               "range": true,
               "refId": "A"
             },
@@ -1636,7 +1636,7 @@
               "refId": "B"
             }
           ],
-          "title": "Deployment Bazlı Kullanım (%)",
+          "title": "Pod Bazli Kullanim (%)",
           "type": "timeseries"
         },
         {
@@ -1644,7 +1644,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Deployment bazında GPU bellek kullanımı (stacked). Beyaz kesikli çizgi toplam kapasiteyi gösterir.",
+          "description": "Pod bazinda GPU bellek kullanımı (stacked). Beyaz kesikli çizgi toplam kapasiteyi gösterir.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1772,8 +1772,8 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum by (deployment) (\n  label_replace(\n    DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"},\n    \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n  )\n)\n/\nsum(\n  max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )\n)\n* 100",
-              "legendFormat": "{{deployment}}",
+              "expr": "max by (exported_pod) (\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n)\n/\nsum(\n  max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )\n)\n* 100",
+              "legendFormat": "{{exported_pod}}",
               "range": true,
               "refId": "A"
             },
@@ -1790,11 +1790,11 @@
               "refId": "B"
             }
           ],
-          "title": "Deployment Bazlı Bellek (%)",
+          "title": "Pod Bazli Bellek (%)",
           "type": "timeseries"
         }
       ],
-      "title": "Deployment Bazli Detay",
+      "title": "Pod Bazli Detay",
       "type": "row"
     },
     {
@@ -1841,88 +1841,12 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "GPU"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 60
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Model"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 180
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Node"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 200
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "MIG"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 50
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Profil"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 100
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Pod"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 200
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
                   "options": "Kullanim %"
                 },
                 "properties": [
                   {
                     "id": "unit",
                     "value": "percent"
-                  },
-                  {
-                    "id": "custom.width",
-                    "value": 100
                   },
                   {
                     "id": "custom.cellOptions",
@@ -1973,10 +1897,6 @@
                     "value": "percent"
                   },
                   {
-                    "id": "custom.width",
-                    "value": 100
-                  },
-                  {
                     "id": "custom.cellOptions",
                     "value": {
                       "mode": "gradient",
@@ -2025,10 +1945,6 @@
                     "value": "celsius"
                   },
                   {
-                    "id": "custom.width",
-                    "value": 80
-                  },
-                  {
                     "id": "custom.cellOptions",
                     "value": {
                       "mode": "gradient",
@@ -2074,10 +1990,6 @@
                   {
                     "id": "decimals",
                     "value": 0
-                  },
-                  {
-                    "id": "custom.width",
-                    "value": 80
                   },
                   {
                     "id": "max",
@@ -2130,10 +2042,6 @@
                   {
                     "id": "decimals",
                     "value": 0
-                  },
-                  {
-                    "id": "custom.width",
-                    "value": 100
                   }
                 ]
               },
@@ -2390,10 +2298,6 @@
               {
                 "id": "displayName",
                 "value": "GPU"
-              },
-              {
-                "id": "custom.width",
-                "value": 60
               }
             ]
           },
@@ -2406,10 +2310,6 @@
               {
                 "id": "displayName",
                 "value": "Model"
-              },
-              {
-                "id": "custom.width",
-                "value": 200
               }
             ]
           },
@@ -2422,10 +2322,6 @@
               {
                 "id": "displayName",
                 "value": "Node"
-              },
-              {
-                "id": "custom.width",
-                "value": 250
               }
             ]
           },
@@ -2438,10 +2334,6 @@
               {
                 "id": "displayName",
                 "value": "MIG"
-              },
-              {
-                "id": "custom.width",
-                "value": 60
               }
             ]
           },
@@ -2454,10 +2346,6 @@
               {
                 "id": "displayName",
                 "value": "Profil"
-              },
-              {
-                "id": "custom.width",
-                "value": 100
               }
             ]
           },
@@ -2470,10 +2358,6 @@
               {
                 "id": "displayName",
                 "value": "Pod"
-              },
-              {
-                "id": "custom.width",
-                "value": 250
               }
             ]
           }
@@ -3011,8 +2895,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v16",
-  "uid": "gpu-monitoring-prod-v16",
-  "version": 16,
+  "title": "GPU Izleme - Production v17",
+  "uid": "gpu-monitoring-prod-v17",
+  "version": 17,
   "weekStart": ""
 }
