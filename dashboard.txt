@@ -1772,7 +1772,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (exported_pod) (\n  (\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    /\n    clamp_min(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    , 1)\n  )\n  * on(UUID, GPU_I_ID) group_left(exported_pod)\n  (max by (UUID, GPU_I_ID, exported_pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}) * 0 + 1)\n) * 100",
+              "expr": "(\n  sum by (exported_pod) (\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    * on(UUID, GPU_I_ID) group_left(exported_pod)\n    (max by (UUID, GPU_I_ID, exported_pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}) * 0 + 1)\n  )\n  /\n  clamp_min(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    )\n  , 1)\n) * 100",
               "legendFormat": "{{exported_pod}}",
               "range": true,
               "refId": "A"
@@ -2781,8 +2781,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v28",
-  "uid": "gpu-monitoring-prod-v28",
-  "version": 28,
+  "title": "GPU Izleme - Production v29",
+  "uid": "gpu-monitoring-prod-v29",
+  "version": 29,
   "weekStart": ""
 }
