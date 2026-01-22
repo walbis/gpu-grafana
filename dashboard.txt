@@ -1798,7 +1798,7 @@
       "type": "row"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2895,8 +2895,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v19",
-  "uid": "gpu-monitoring-prod-v19",
-  "version": 19,
+  "title": "GPU Izleme - Production v20",
+  "uid": "gpu-monitoring-prod-v20",
+  "version": 20,
   "weekStart": ""
 }
