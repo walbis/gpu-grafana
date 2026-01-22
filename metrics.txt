@@ -194,11 +194,11 @@ count(DCGM_FI_DEV_ECC_DBE_VOL_TOTAL) # Yoksa ekle
 - Default Metrics: https://github.com/NVIDIA/dcgm-exporter/blob/main/etc/dcp-metrics-included.csv
 
 
-## KOPYALA-YAPISTIR: EKLENMESI GEREKEN METRIKLER
-## ==============================================
+## EKLENMESI GEREKEN METRIKLER
+## ============================
 
-DCGM_FI_DEV_FB_TOTAL, gauge, Total framebuffer memory (MB)
-DCGM_FI_DEV_POWER_MGMT_LIMIT, gauge, Power management limit (W)
-DCGM_FI_DEV_ECC_DBE_VOL_TOTAL, gauge, Total double-bit ECC errors
-DCGM_FI_PROF_SM_ACTIVE, gauge, SM active ratio
-DCGM_FI_PROF_SM_OCCUPANCY, gauge, SM occupancy ratio
+DCGM_FI_DEV_FB_TOTAL
+DCGM_FI_DEV_POWER_MGMT_LIMIT
+DCGM_FI_DEV_ECC_DBE_VOL_TOTAL
+DCGM_FI_PROF_SM_ACTIVE
+DCGM_FI_PROF_SM_OCCUPANCY
