@@ -1530,7 +1530,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "clamp_max(\n  sum by (deployment) (\n    label_replace(\n      avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}[$__rate_interval]),\n      \"deployment\", \"$1\", \"exported_pod\", \"(.+)-[a-z0-9]+-[a-z0-9]+$\"\n    )\n  ) * 100,\n  100\n)",
+              "expr": "clamp_max(\n  sum by (deployment) (\n    label_replace(\n      avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}[$__rate_interval]),\n      \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n    )\n  ) * 100,\n  100\n)",
               "legendFormat": "{{deployment}}",
               "range": true,
               "refId": "A"
@@ -1684,7 +1684,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum by (deployment) (\n  label_replace(\n    DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"},\n    \"deployment\", \"$1\", \"exported_pod\", \"(.+)-[a-z0-9]+-[a-z0-9]+$\"\n  )\n)\n/\nclamp_min(\n  sum(max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )),\n  1\n) * 100",
+              "expr": "sum by (deployment) (\n  label_replace(\n    DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"},\n    \"deployment\", \"$1\", \"exported_pod\", \"^(.+)-[^-]+-[^-]+$\"\n  )\n)\n/\nclamp_min(\n  sum(max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )),\n  1\n) * 100",
               "legendFormat": "{{deployment}}",
               "range": true,
               "refId": "A"
@@ -2844,8 +2844,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v9",
-  "uid": "gpu-monitoring-prod-v9",
-  "version": 9,
+  "title": "GPU Izleme - Production v10",
+  "uid": "gpu-monitoring-prod-v10",
+  "version": 10,
   "weekStart": ""
 }
