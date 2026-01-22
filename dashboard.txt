@@ -1772,7 +1772,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (exported_pod) (\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n)\n/\nsum(\n  max by (UUID, GPU_I_ID) (\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n  )\n)\n* 100",
+              "expr": "max by (exported_pod) (\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", exported_pod!=\"\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", exported_pod!=\"\"})\n  , 1)\n) * 100",
               "legendFormat": "{{exported_pod}}",
               "range": true,
               "refId": "A"
@@ -1798,7 +1798,7 @@
       "type": "row"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2060,7 +2060,7 @@
             ]
           },
           "gridPos": {
-            "h": 20,
+            "h": 30,
             "w": 24,
             "x": 0,
             "y": 22
@@ -2895,8 +2895,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v17",
-  "uid": "gpu-monitoring-prod-v17",
-  "version": 17,
+  "title": "GPU Izleme - Production v18",
+  "uid": "gpu-monitoring-prod-v18",
+  "version": 18,
   "weekStart": ""
 }
