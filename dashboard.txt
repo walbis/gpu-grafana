@@ -1772,7 +1772,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (exported_pod) (\n  DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", exported_pod!=\"\"}\n    or\n    (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", exported_pod!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", exported_pod!=\"\"})\n  , 1)\n) * 100",
+              "expr": "max by (exported_pod) (\n  (\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    /\n    clamp_min(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    , 1)\n  )\n  * on(UUID, GPU_I_ID) group_left(exported_pod)\n  (max by (UUID, GPU_I_ID, exported_pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}) * 0 + 1)\n) * 100",
               "legendFormat": "{{exported_pod}}",
               "range": true,
               "refId": "A"
@@ -2193,7 +2193,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_replace(\n  label_replace(\n    label_replace(\n      avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n      \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n    ),\n    \"modelName\", \"TOPLAM\", \"\", \"\"\n  ),\n  \"Hostname\", \"-\", \"\", \"\"\n)",
+              "expr": "label_replace(\n  label_replace(\n    avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  ),\n  \"GPU_I_PROFILE\", \"TOPLAM\", \"\", \"\"\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -2315,23 +2315,21 @@
                   "UUID 3": true,
                   "UUID 4": true,
                   "UUID 5": true,
-                  "gpu": true
+                  "gpu": true,
+                  "modelName": true,
+                  "Hostname": true
                 },
                 "indexByName": {
-                  "modelName": 0,
-                  "Hostname": 1,
-                  "GPU_I_PROFILE": 2,
-                  "exported_pod": 3,
-                  "Value #util": 4,
-                  "Value #mem": 5,
-                  "Value #memused": 6,
-                  "Value #memcap": 7,
-                  "Value #temp": 8,
-                  "Value #power": 9
+                  "GPU_I_PROFILE": 0,
+                  "exported_pod": 1,
+                  "Value #util": 2,
+                  "Value #mem": 3,
+                  "Value #memused": 4,
+                  "Value #memcap": 5,
+                  "Value #temp": 6,
+                  "Value #power": 7
                 },
                 "renameByName": {
-                  "modelName": "Model",
-                  "Hostname": "Node",
                   "GPU_I_PROFILE": "MIG Profil",
                   "exported_pod": "Pod",
                   "Value #util": "Kullanim %",
@@ -3026,8 +3024,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v23",
-  "uid": "gpu-monitoring-prod-v23",
-  "version": 23,
+  "title": "GPU Izleme - Production v24",
+  "uid": "gpu-monitoring-prod-v24",
+  "version": 24,
   "weekStart": ""
 }
