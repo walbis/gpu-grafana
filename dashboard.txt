@@ -1976,16 +1976,28 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Guc W"
+                  "options": "Guc %"
                 },
                 "properties": [
                   {
                     "id": "unit",
-                    "value": "watt"
+                    "value": "percent"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 0
                   },
                   {
                     "id": "custom.width",
                     "value": 80
+                  },
+                  {
+                    "id": "max",
+                    "value": 100
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
                   },
                   {
                     "id": "thresholds",
@@ -1998,15 +2010,11 @@
                         },
                         {
                           "color": "yellow",
-                          "value": 150
-                        },
-                        {
-                          "color": "orange",
-                          "value": 250
+                          "value": 70
                         },
                         {
                           "color": "red",
-                          "value": 300
+                          "value": 90
                         }
                       ]
                     }
@@ -2014,8 +2022,9 @@
                   {
                     "id": "custom.cellOptions",
                     "value": {
-                      "mode": "basic",
-                      "type": "color-background"
+                      "mode": "gradient",
+                      "type": "gauge",
+                      "valueDisplayMode": "text"
                     }
                   }
                 ]
@@ -2127,7 +2136,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}),\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"})\n  /\n  clamp_min(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"}), 1)\n  * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -2203,7 +2212,7 @@
                   "Value #mem": "Bellek %",
                   "Value #memcap": "Kapasite GB",
                   "Value #temp": "Sicaklik",
-                  "Value #power": "Guc W"
+                  "Value #power": "Guc %"
                 }
               }
             }
@@ -2914,8 +2923,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v14",
-  "uid": "gpu-monitoring-prod-v14",
-  "version": 14,
+  "title": "GPU Izleme - Production v15",
+  "uid": "gpu-monitoring-prod-v15",
+  "version": 15,
   "weekStart": ""
 }
