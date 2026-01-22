@@ -1937,49 +1937,6 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Sicaklik"
-                },
-                "properties": [
-                  {
-                    "id": "unit",
-                    "value": "celsius"
-                  },
-                  {
-                    "id": "custom.cellOptions",
-                    "value": {
-                      "mode": "gradient",
-                      "type": "color-background"
-                    }
-                  },
-                  {
-                    "id": "thresholds",
-                    "value": {
-                      "mode": "absolute",
-                      "steps": [
-                        {
-                          "color": "green",
-                          "value": null
-                        },
-                        {
-                          "color": "yellow",
-                          "value": 75
-                        },
-                        {
-                          "color": "orange",
-                          "value": 83
-                        },
-                        {
-                          "color": "red",
-                          "value": 90
-                        }
-                      ]
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
                   "options": "Guc %"
                 },
                 "properties": [
@@ -2133,21 +2090,6 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"}),\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "temp"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
               "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"})\n  /\n  clamp_min(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"}), 1)\n  * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
               "format": "table",
               "hide": false,
@@ -2193,7 +2135,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_replace(\n  label_replace(\n    avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  ),\n  \"GPU_I_PROFILE\", \"TOPLAM\", \"\", \"\"\n)",
+              "expr": "label_replace(\n  label_replace(\n    avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  ),\n  \"exported_pod\", \"TOPLAM\", \"\", \"\"\n)",
               "format": "table",
               "hide": false,
               "instant": true,
@@ -2215,21 +2157,6 @@
               "legendFormat": "__auto",
               "range": false,
               "refId": "total_mem"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "label_replace(\n  avg(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})),\n  \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n)",
-              "format": "table",
-              "hide": false,
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "total_temp"
             },
             {
               "datasource": {
@@ -2290,17 +2217,7 @@
               "id": "filterFieldsByName",
               "options": {
                 "include": {
-                  "names": [
-                    "gpu_key",
-                    "GPU_I_PROFILE",
-                    "exported_pod",
-                    "Value #util",
-                    "Value #mem",
-                    "Value #memused",
-                    "Value #memcap",
-                    "Value #temp",
-                    "Value #power"
-                  ]
+                  "pattern": "^(gpu_key|exported_pod|Value #(util|mem|memused|memcap|power|total_util|total_mem|total_memused|total_memcap|total_power))$"
                 }
               }
             },
@@ -2311,24 +2228,20 @@
                   "gpu_key": true
                 },
                 "indexByName": {
-                  "GPU_I_PROFILE": 0,
-                  "exported_pod": 1,
-                  "Value #util": 2,
-                  "Value #mem": 3,
-                  "Value #memused": 4,
-                  "Value #memcap": 5,
-                  "Value #temp": 6,
-                  "Value #power": 7,
-                  "gpu_key": 8
+                  "exported_pod": 0,
+                  "Value #util": 1,
+                  "Value #mem": 2,
+                  "Value #memused": 3,
+                  "Value #memcap": 4,
+                  "Value #power": 5,
+                  "gpu_key": 6
                 },
                 "renameByName": {
-                  "GPU_I_PROFILE": "MIG Profil",
                   "exported_pod": "Pod",
                   "Value #util": "Kullanim %",
                   "Value #mem": "Bellek %",
                   "Value #memused": "Kullanim GB",
                   "Value #memcap": "Kapasite GB",
-                  "Value #temp": "Sicaklik",
                   "Value #power": "Guc %"
                 }
               }
@@ -3016,8 +2929,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v26",
-  "uid": "gpu-monitoring-prod-v26",
-  "version": 26,
+  "title": "GPU Izleme - Production v27",
+  "uid": "gpu-monitoring-prod-v27",
+  "version": 27,
   "weekStart": ""
 }
