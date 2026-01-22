@@ -2048,6 +2048,22 @@
               {
                 "matcher": {
                   "id": "byName",
+                  "options": "Kullanim GB"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "decgbytes"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
                   "options": "gpu_key"
                 },
                 "properties": [
@@ -2088,7 +2104,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "label_replace(\n  label_join(\n    max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, pod, UUID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    ) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  ),\n  \"deployment\", \"$1\", \"pod\", \"^(.+)-[^-]+-[^-]+$\"\n)",
+              "expr": "label_join(\n  max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, pod, UUID) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n  ) * 100,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2154,6 +2170,21 @@
               "legendFormat": "__auto",
               "range": false,
               "refId": "memcap"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "label_join(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) / 1024,\n  \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "memused"
             }
           ],
           "title": "GPU Detay Tablosu",
@@ -2175,37 +2206,41 @@
                   "Time 3": true,
                   "Time 4": true,
                   "Time 5": true,
+                  "Time 6": true,
                   "GPU_I_ID": true,
                   "GPU_I_ID 1": true,
                   "GPU_I_ID 2": true,
                   "GPU_I_ID 3": true,
                   "GPU_I_ID 4": true,
+                  "GPU_I_ID 5": true,
                   "UUID": true,
                   "UUID 1": true,
                   "UUID 2": true,
                   "UUID 3": true,
                   "UUID 4": true,
-                  "gpu": true,
-                  "pod": true
+                  "UUID 5": true,
+                  "gpu": true
                 },
                 "indexByName": {
                   "modelName": 0,
                   "Hostname": 1,
                   "GPU_I_PROFILE": 2,
-                  "deployment": 3,
+                  "pod": 3,
                   "Value #util": 4,
                   "Value #mem": 5,
-                  "Value #memcap": 6,
-                  "Value #temp": 7,
-                  "Value #power": 8
+                  "Value #memused": 6,
+                  "Value #memcap": 7,
+                  "Value #temp": 8,
+                  "Value #power": 9
                 },
                 "renameByName": {
                   "modelName": "Model",
                   "Hostname": "Node",
                   "GPU_I_PROFILE": "MIG Profil",
-                  "deployment": "Deployment",
+                  "pod": "Pod",
                   "Value #util": "Kullanim %",
                   "Value #mem": "Bellek %",
+                  "Value #memused": "Kullanim GB",
                   "Value #memcap": "Kapasite GB",
                   "Value #temp": "Sicaklik",
                   "Value #power": "Guc %"
@@ -2895,8 +2930,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Izleme - Production v20",
-  "uid": "gpu-monitoring-prod-v20",
-  "version": 20,
+  "title": "GPU Izleme - Production v21",
+  "uid": "gpu-monitoring-prod-v21",
+  "version": 21,
   "weekStart": ""
 }
