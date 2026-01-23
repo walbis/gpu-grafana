@@ -2120,7 +2120,7 @@
             "footer": {
               "countRows": true,
               "enablePagination": true,
-              "fields": ["Util Now", "Util Avg", "Util 09-18", "Util 18-09", "Mem Now", "Mem Avg", "Mem 09-18", "Mem 18-09"],
+              "fields": ["Util Now", "Mem Now", "Util 09-18", "Mem 09-18", "Util 18-09", "Mem 18-09", "Util Avg", "Mem Avg"],
               "reducer": ["mean"],
               "show": true
             },
@@ -2301,13 +2301,13 @@
                   "modelName": 1,
                   "exported_pod": 2,
                   "Value #util_now": 3,
-                  "Value #util_avg": 4,
+                  "Value #mem_now": 4,
                   "Value #util_0918": 5,
-                  "Value #util_1809": 6,
-                  "Value #mem_now": 7,
-                  "Value #mem_avg": 8,
-                  "Value #mem_0918": 9,
-                  "Value #mem_1809": 10
+                  "Value #mem_0918": 6,
+                  "Value #util_1809": 7,
+                  "Value #mem_1809": 8,
+                  "Value #util_avg": 9,
+                  "Value #mem_avg": 10
                 },
                 "renameByName": {
                   "Hostname": "Hostname",
@@ -2448,8 +2448,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v35",
-  "uid": "gpu-monitoring-prod-v35",
-  "version": 35,
+  "title": "GPU Monitoring - Production v36",
+  "uid": "gpu-monitoring-prod-v36",
+  "version": 36,
   "weekStart": ""
 }
