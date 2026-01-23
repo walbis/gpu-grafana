@@ -1940,7 +1940,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "GPU details with current and time-based average utilization. Avg 09-18 = business hours, Avg 18-09 = off hours.",
+          "description": "GPU details with utilization and memory metrics. Now = instant, Avg = selected range average, 09-18 = business hours, 18-09 = off hours.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1974,7 +1974,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 150
+                    "value": 130
                   }
                 ]
               },
@@ -1986,7 +1986,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 140
+                    "value": 120
                   }
                 ]
               },
@@ -1998,14 +1998,14 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 200
+                    "value": 180
                   }
                 ]
               },
               {
                 "matcher": {
-                  "id": "byName",
-                  "options": "Util % (Now)"
+                  "id": "byRegexp",
+                  "options": "Util.*"
                 },
                 "properties": [
                   {
@@ -2050,14 +2050,14 @@
                   },
                   {
                     "id": "custom.width",
-                    "value": 120
+                    "value": 100
                   }
                 ]
               },
               {
                 "matcher": {
-                  "id": "byName",
-                  "options": "Util % (09-18)"
+                  "id": "byRegexp",
+                  "options": "Mem.*"
                 },
                 "properties": [
                   {
@@ -2102,111 +2102,7 @@
                   },
                   {
                     "id": "custom.width",
-                    "value": 120
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Util % (18-09)"
-                },
-                "properties": [
-                  {
-                    "id": "unit",
-                    "value": "percent"
-                  },
-                  {
-                    "id": "custom.cellOptions",
-                    "value": {
-                      "mode": "gradient",
-                      "type": "gauge",
-                      "valueDisplayMode": "text"
-                    }
-                  },
-                  {
-                    "id": "thresholds",
-                    "value": {
-                      "mode": "absolute",
-                      "steps": [
-                        {
-                          "color": "green",
-                          "value": null
-                        },
-                        {
-                          "color": "yellow",
-                          "value": 70
-                        },
-                        {
-                          "color": "red",
-                          "value": 90
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "id": "max",
                     "value": 100
-                  },
-                  {
-                    "id": "min",
-                    "value": 0
-                  },
-                  {
-                    "id": "custom.width",
-                    "value": 120
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Mem %"
-                },
-                "properties": [
-                  {
-                    "id": "unit",
-                    "value": "percent"
-                  },
-                  {
-                    "id": "custom.cellOptions",
-                    "value": {
-                      "mode": "gradient",
-                      "type": "gauge",
-                      "valueDisplayMode": "text"
-                    }
-                  },
-                  {
-                    "id": "thresholds",
-                    "value": {
-                      "mode": "absolute",
-                      "steps": [
-                        {
-                          "color": "green",
-                          "value": null
-                        },
-                        {
-                          "color": "yellow",
-                          "value": 70
-                        },
-                        {
-                          "color": "red",
-                          "value": 90
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "id": "max",
-                    "value": 100
-                  },
-                  {
-                    "id": "min",
-                    "value": 0
-                  },
-                  {
-                    "id": "custom.width",
-                    "value": 120
                   }
                 ]
               }
@@ -2224,7 +2120,7 @@
             "footer": {
               "countRows": true,
               "enablePagination": true,
-              "fields": ["Util % (Now)", "Util % (09-18)", "Util % (18-09)", "Mem %"],
+              "fields": ["Util Now", "Util Avg", "Util 09-18", "Util 18-09", "Mem Now", "Mem Avg", "Mem 09-18", "Mem 18-09"],
               "reducer": ["mean"],
               "show": true
             },
@@ -2272,6 +2168,20 @@
               },
               "editorMode": "code",
               "exemplar": false,
+              "expr": "avg_over_time(\n  max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n  [$avg_range:5m]\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "util_avg"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
               "expr": "avg_over_time(\n  (max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n   and on() (hour() >= 9 and hour() < 18)\n  )[$avg_range:5m]\n) * 100",
               "format": "table",
               "instant": true,
@@ -2302,11 +2212,52 @@
               "exemplar": false,
               "expr": "max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n/\nclamp_min(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n  or\n  (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n, 1) * 100",
               "format": "table",
-              "hide": false,
               "instant": true,
               "legendFormat": "__auto",
               "range": false,
-              "refId": "mem"
+              "refId": "mem_now"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "avg_over_time(\n  (\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    /\n    clamp_min(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    , 1)\n  )[$avg_range:5m]\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "mem_avg"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "avg_over_time(\n  (\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n      /\n      clamp_min(\n        max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n        or\n        (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n      , 1)\n    )\n    and on() (hour() >= 9 and hour() < 18)\n  )[$avg_range:5m]\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "mem_0918"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "avg_over_time(\n  (\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n      /\n      clamp_min(\n        max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n        or\n        (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n      , 1)\n    )\n    and on() (hour() >= 18 or hour() < 9)\n  )[$avg_range:5m]\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "mem_1809"
             }
           ],
           "title": "GPU Details",
@@ -2328,6 +2279,10 @@
                   "Time 3": true,
                   "Time 4": true,
                   "Time 5": true,
+                  "Time 6": true,
+                  "Time 7": true,
+                  "Time 8": true,
+                  "Time 9": true,
                   "UUID": true,
                   "GPU_I_ID": true,
                   "GPU_I_ID 1": true,
@@ -2335,6 +2290,10 @@
                   "GPU_I_ID 3": true,
                   "GPU_I_ID 4": true,
                   "GPU_I_ID 5": true,
+                  "GPU_I_ID 6": true,
+                  "GPU_I_ID 7": true,
+                  "GPU_I_ID 8": true,
+                  "GPU_I_ID 9": true,
                   "Value #base": true
                 },
                 "indexByName": {
@@ -2342,18 +2301,26 @@
                   "modelName": 1,
                   "exported_pod": 2,
                   "Value #util_now": 3,
-                  "Value #util_0918": 4,
-                  "Value #util_1809": 5,
-                  "Value #mem": 6
+                  "Value #util_avg": 4,
+                  "Value #util_0918": 5,
+                  "Value #util_1809": 6,
+                  "Value #mem_now": 7,
+                  "Value #mem_avg": 8,
+                  "Value #mem_0918": 9,
+                  "Value #mem_1809": 10
                 },
                 "renameByName": {
                   "Hostname": "Hostname",
                   "modelName": "Model",
                   "exported_pod": "Pod",
-                  "Value #util_now": "Util % (Now)",
-                  "Value #util_0918": "Util % (09-18)",
-                  "Value #util_1809": "Util % (18-09)",
-                  "Value #mem": "Mem %"
+                  "Value #util_now": "Util Now",
+                  "Value #util_avg": "Util Avg",
+                  "Value #util_0918": "Util 09-18",
+                  "Value #util_1809": "Util 18-09",
+                  "Value #mem_now": "Mem Now",
+                  "Value #mem_avg": "Mem Avg",
+                  "Value #mem_0918": "Mem 09-18",
+                  "Value #mem_1809": "Mem 18-09"
                 }
               }
             }
@@ -2481,8 +2448,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v34",
-  "uid": "gpu-monitoring-prod-v34",
-  "version": 34,
+  "title": "GPU Monitoring - Production v35",
+  "uid": "gpu-monitoring-prod-v35",
+  "version": 35,
   "weekStart": ""
 }
