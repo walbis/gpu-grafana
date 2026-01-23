@@ -539,7 +539,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n  /\n  clamp_min(\n    sum(max by (UUID, GPU_I_ID) (\n      DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n      or\n      (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n    ))\n  , 1)\n) * 100 or vector(0)",
+          "expr": "(\n  (\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})) or vector(0)\n  )\n  +\n  (\n    sum(\n      max by (UUID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID=\"\"})\n      unless on(UUID)\n      max by (UUID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})\n    ) or vector(0)\n  )\n)\n/\nclamp_min(\n  (\n    sum(max by (UUID, GPU_I_ID) (\n      DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", GPU_I_ID!=\"\"}\n      or\n      (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})\n    )) or vector(0)\n  )\n  +\n  (\n    sum(\n      max by (UUID) (\n        DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", GPU_I_ID=\"\"}\n        or\n        (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", GPU_I_ID=\"\"})\n      )\n      unless on(UUID)\n      max by (UUID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})\n    ) or vector(0)\n  )\n, 1) * 100 or vector(0)",
           "instant": true,
           "legendFormat": "Memory %",
           "range": false,
@@ -1117,7 +1117,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n  /\n  clamp_min(\n    sum(max by (UUID, GPU_I_ID) (\n      DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n      or\n      (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n    ))\n  , 1)\n) * 100",
+          "expr": "(\n  (\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})) or vector(0)\n  )\n  +\n  (\n    sum(\n      max by (UUID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID=\"\"})\n      unless on(UUID)\n      max by (UUID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})\n    ) or vector(0)\n  )\n)\n/\nclamp_min(\n  (\n    sum(max by (UUID, GPU_I_ID) (\n      DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", GPU_I_ID!=\"\"}\n      or\n      (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})\n    )) or vector(0)\n  )\n  +\n  (\n    sum(\n      max by (UUID) (\n        DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\", GPU_I_ID=\"\"}\n        or\n        (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID=\"\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\", GPU_I_ID=\"\"})\n      )\n      unless on(UUID)\n      max by (UUID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})\n    ) or vector(0)\n  )\n, 1) * 100",
           "legendFormat": "Total",
           "range": true,
           "refId": "A"
@@ -2135,7 +2135,7 @@
             "footer": {
               "countRows": true,
               "enablePagination": true,
-              "fields": ["Util Now", "Mem Now", "Util Avg", "Mem Avg"],
+              "fields": ["Util Avg", "Mem Avg", "Util Now", "Mem Now"],
               "reducer": ["mean"],
               "show": true
             },
@@ -2250,11 +2250,11 @@
                 "indexByName": {
                   "Hostname": 0,
                   "modelName": 1,
-                  "exported_pod": 2,
-                  "Value #util_now": 3,
-                  "Value #mem_now": 4,
-                  "Value #util_avg": 5,
-                  "Value #mem_avg": 6
+                  "Value #util_avg": 2,
+                  "Value #mem_avg": 3,
+                  "Value #util_now": 4,
+                  "Value #mem_now": 5,
+                  "exported_pod": 6
                 },
                 "renameByName": {
                   "Hostname": "Hostname",
@@ -2391,8 +2391,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v39",
-  "uid": "gpu-monitoring-prod-v39",
-  "version": 39,
+  "title": "GPU Monitoring - Production v40",
+  "uid": "gpu-monitoring-prod-v40",
+  "version": 40,
   "weekStart": ""
 }
