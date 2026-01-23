@@ -1935,6 +1935,80 @@
           ],
           "title": "Memory Usage (%)",
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "Pod GPU usage history. Color indicates utilization level. Gaps = pod not running.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "orange",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              },
+              "unit": "percent",
+              "min": 0,
+              "max": 100
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 31
+          },
+          "id": 403,
+          "options": {
+            "showValue": "auto",
+            "alignValue": "center",
+            "rowHeight": 0.8,
+            "mergeValues": true,
+            "legend": {
+              "showLegend": true,
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "clamp_max(\n  max by (exported_pod) (\n    DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\", exported_pod!=\"\"}\n  ) * 100,\n  100\n)",
+              "legendFormat": "{{exported_pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Pod Activity Timeline",
+          "type": "state-timeline"
         }
       ],
       "title": "Workload Details",
@@ -2391,8 +2465,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v40",
-  "uid": "gpu-monitoring-prod-v40",
-  "version": 40,
+  "title": "GPU Monitoring - Production v41",
+  "uid": "gpu-monitoring-prod-v41",
+  "version": 41,
   "weekStart": ""
 }
