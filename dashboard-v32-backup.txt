@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "NVIDIA GPU monitoring dashboard - DCGM Exporter metrics. Utilization, memory, temperature, power consumption, and error monitoring.",
+  "description": "NVIDIA GPU izleme dashboard'u - DCGM Exporter metrikleri. Utilization, bellek, sıcaklık, güç tüketimi ve hata izleme.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -46,7 +46,7 @@
       },
       "id": 100,
       "panels": [],
-      "title": "All GPUs (Summary)",
+      "title": "Tum GPU'lar (Ozet)",
       "type": "row"
     },
     {
@@ -54,7 +54,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Number of physical GPUs on selected nodes (excluding MIG)",
+      "description": "Seçili node'lardaki fiziksel GPU sayısı (MIG hariç)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -105,12 +105,12 @@
           "exemplar": false,
           "expr": "count(count by (UUID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})) or vector(0)",
           "instant": true,
-          "legendFormat": "Physical GPUs",
+          "legendFormat": "Fiziksel GPU",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Physical GPUs",
+      "title": "Fiziksel GPU",
       "type": "stat"
     },
     {
@@ -118,7 +118,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Number of MIG (Multi-Instance GPU) instances",
+      "description": "MIG (Multi-Instance GPU) instance sayısı",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -169,12 +169,12 @@
           "exemplar": false,
           "expr": "count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\", GPU_I_ID!=\"\"})) or vector(0)",
           "instant": true,
-          "legendFormat": "MIG Instances",
+          "legendFormat": "MIG Instance",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "MIG Instances",
+      "title": "MIG Instance",
       "type": "stat"
     },
     {
@@ -182,7 +182,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Number of GPUs actively used by pods",
+      "description": "Aktif olarak pod tarafından kullanılan GPU sayısı",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -237,12 +237,12 @@
           "exemplar": false,
           "expr": "count(count by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\", exported_pod!=\"\"})) or vector(0)",
           "instant": true,
-          "legendFormat": "Active",
+          "legendFormat": "Kullanımda",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Active (Pods)",
+      "title": "Kullanımda (Pod)",
       "type": "stat"
     },
     {
@@ -250,7 +250,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Graphics/Compute Engine activity ratio - percentage of time GPU is processing",
+      "description": "Graphics/Compute Engine aktiflik oranı - GPU'nun işlem yaptığı zaman yüzdesi",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -313,12 +313,12 @@
           "exemplar": false,
           "expr": "clamp_max(\n  avg(\n    max by (UUID, GPU_I_ID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    )\n  ) * 100,\n  100\n) or vector(0)",
           "instant": true,
-          "legendFormat": "GPU Utilization",
+          "legendFormat": "Engine Active",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "GPU Utilization",
+      "title": "Engine Active",
       "type": "gauge"
     },
     {
@@ -326,7 +326,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "SM (Streaming Multiprocessor) activity ratio - actual compute capacity utilization",
+      "description": "SM (Streaming Multiprocessor) aktiflik oranı - Gerçek hesaplama kapasitesi kullanımı",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -402,7 +402,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "SM Occupancy - how efficiently SMs are utilized (warp occupancy ratio)",
+      "description": "SM Occupancy - SM'lerin ne kadar verimli kullanıldığı (warp doluluk oranı)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -478,7 +478,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Total GPU memory usage percentage (Used / Total)",
+      "description": "Toplam GPU bellek kullanım yüzdesi (Used / Total)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -541,12 +541,12 @@
           "exemplar": false,
           "expr": "(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n  /\n  clamp_min(\n    sum(max by (UUID, GPU_I_ID) (\n      DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n      or\n      (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n    ))\n  , 1)\n) * 100 or vector(0)",
           "instant": true,
-          "legendFormat": "Memory %",
+          "legendFormat": "Bellek %",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Memory Usage",
+      "title": "Bellek Kullanımı",
       "type": "gauge"
     },
     {
@@ -554,7 +554,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "GPU temperature summary: Current, Average, Maximum",
+      "description": "GPU sıcaklık özeti: Mevcut, Ortalama, Maksimum",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -621,12 +621,12 @@
           "exemplar": false,
           "expr": "avg(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"}))",
           "instant": false,
-          "legendFormat": "Temperature",
+          "legendFormat": "Sıcaklık",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "GPU Temperature (Cur / Avg / Max)",
+      "title": "GPU Sicaklik (Anlik / Ort / Maks)",
       "type": "stat"
     },
     {
@@ -634,7 +634,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Total GPU power consumption",
+      "description": "Toplam GPU güç tüketimi",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -666,7 +666,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Capacity %"
+              "options": "Kapasite %"
             },
             "properties": [
               {
@@ -731,12 +731,12 @@
           "exemplar": false,
           "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))\n/\nclamp_min(sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"})), 1)\n* 100",
           "instant": false,
-          "legendFormat": "Capacity %",
+          "legendFormat": "Kapasite %",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Power Usage (W / %)",
+      "title": "Guc Tuketimi (W / %)",
       "type": "stat"
     },
     {
@@ -744,7 +744,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "XID errors (increase in last 1 hour) and ECC double-bit error count",
+      "description": "XID hataları (son 1 saat artış) ve ECC çift-bit hata sayısı",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -811,7 +811,7 @@
           "exemplar": false,
           "expr": "sum(max by (UUID, GPU_I_ID) (\n  DCGM_FI_DEV_XID_ERRORS{Hostname=~\"$hostname\"}\n)) - sum(max by (UUID, GPU_I_ID) (\n  DCGM_FI_DEV_XID_ERRORS{Hostname=~\"$hostname\"} offset 1h\n)) >= 0 or vector(0)",
           "instant": true,
-          "legendFormat": "XID Errors (1h)",
+          "legendFormat": "XID Hataları (1h)",
           "range": false,
           "refId": "A"
         },
@@ -830,7 +830,7 @@
           "refId": "B"
         }
       ],
-      "title": "GPU Errors",
+      "title": "GPU Hatalari",
       "type": "stat"
     },
     {
@@ -838,7 +838,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "GPU utilization change over time. Yellow line: average of all GPUs.",
+      "description": "Zaman içinde GPU kullanım değişimi. Sarı çizgi: tüm GPU'ların ortalaması.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -905,7 +905,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Average"
+              "options": "Ortalama"
             },
             "properties": [
               {
@@ -958,7 +958,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "clamp_max(\n  avg(\n    max by (UUID, GPU_I_ID) (\n      avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}[$__rate_interval])\n    )\n  ) * 100,\n  100\n)",
-          "legendFormat": "Average",
+          "legendFormat": "Ortalama",
           "range": true,
           "refId": "A"
         },
@@ -975,7 +975,7 @@
           "refId": "B"
         }
       ],
-      "title": "Utilization Trend",
+      "title": "Kullanim Trendi",
       "type": "timeseries"
     },
     {
@@ -983,7 +983,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "GPU memory usage percentage over time. Yellow line: total.",
+      "description": "Zaman içinde GPU bellek kullanım yüzdesi. Sarı çizgi: toplam.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1050,7 +1050,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Total"
+              "options": "Toplam"
             },
             "properties": [
               {
@@ -1103,7 +1103,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "(\n  sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n  /\n  clamp_min(\n    sum(max by (UUID, GPU_I_ID) (\n      DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"}\n      or\n      (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"} + DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"})\n    ))\n  , 1)\n) * 100",
-          "legendFormat": "Total",
+          "legendFormat": "Toplam",
           "range": true,
           "refId": "A"
         },
@@ -1120,7 +1120,7 @@
           "refId": "B"
         }
       ],
-      "title": "Memory Trend (%)",
+      "title": "Bellek Trendi (%)",
       "type": "timeseries"
     },
     {
@@ -1138,7 +1138,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "GPU temperature trend (°C)",
+          "description": "GPU sıcaklık trendi (°C)",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1208,7 +1208,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Average"
+                  "options": "Ortalama"
                 },
                 "properties": [
                   {
@@ -1261,7 +1261,7 @@
               "editorMode": "code",
               "exemplar": false,
               "expr": "avg(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"}))",
-              "legendFormat": "Average",
+              "legendFormat": "Ortalama",
               "range": true,
               "refId": "A"
             },
@@ -1278,7 +1278,7 @@
               "refId": "B"
             }
           ],
-          "title": "Temperature Trend",
+          "title": "Sicaklik Trendi",
           "type": "timeseries"
         },
         {
@@ -1286,7 +1286,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "GPU power consumption trend (Watts)",
+          "description": "GPU güç tüketimi trendi (Watt)",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1344,7 +1344,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Total W"
+                  "options": "Toplam W"
                 },
                 "properties": [
                   {
@@ -1367,7 +1367,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Total %"
+                  "options": "Toplam %"
                 },
                 "properties": [
                   {
@@ -1439,7 +1439,7 @@
               "editorMode": "code",
               "exemplar": false,
               "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))",
-              "legendFormat": "Total W",
+              "legendFormat": "Toplam W",
               "range": true,
               "refId": "A"
             },
@@ -1451,7 +1451,7 @@
               "editorMode": "code",
               "exemplar": false,
               "expr": "sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{Hostname=~\"$hostname\"}))\n/\nclamp_min(sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_MGMT_LIMIT{Hostname=~\"$hostname\"})), 1)\n* 100",
-              "legendFormat": "Total %",
+              "legendFormat": "Toplam %",
               "range": true,
               "refId": "C"
             },
@@ -1468,7 +1468,7 @@
               "refId": "B"
             }
           ],
-          "title": "Power Trend (W / %)",
+          "title": "Guc Tuketimi Trendi (W / %)",
           "type": "timeseries"
         },
         {
@@ -1476,7 +1476,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "GPU total energy consumption (Watt-hours). Shows consumption for the last 1 hour and 24 hours.",
+          "description": "GPU toplam enerji tüketimi (Watt-saat). Son 1 saat ve 24 saatteki tüketimi gösterir.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1507,7 +1507,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Last 24 Hours"
+                  "options": "Son 24 Saat"
                 },
                 "properties": [
                   {
@@ -1566,7 +1566,7 @@
               "exemplar": false,
               "expr": "sum(increase(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{Hostname=~\"$hostname\"}[1h])) / 3600000",
               "instant": false,
-              "legendFormat": "Last 1 Hour",
+              "legendFormat": "Son 1 Saat",
               "range": true,
               "refId": "A"
             },
@@ -1579,16 +1579,16 @@
               "exemplar": false,
               "expr": "sum(increase(DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION{Hostname=~\"$hostname\"}[24h])) / 3600000",
               "instant": false,
-              "legendFormat": "Last 24 Hours",
+              "legendFormat": "Son 24 Saat",
               "range": true,
               "refId": "B"
             }
           ],
-          "title": "Energy Consumption (Wh)",
+          "title": "Enerji Tuketimi (Wh)",
           "type": "stat"
         }
       ],
-      "title": "Temperature & Power",
+      "title": "Sicaklik ve Guc Trendleri",
       "type": "row"
     },
     {
@@ -1606,7 +1606,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Per-pod GPU utilization percentage (stacked). Total capacity line shown on top.",
+          "description": "Pod bazinda GPU kullanım yüzdesi (stacked). Toplam kapasite çizgisi üstte gösterilir.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1665,7 +1665,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Total Capacity"
+                  "options": "Toplam Kapasite"
                 },
                 "properties": [
                   {
@@ -1747,12 +1747,12 @@
               "editorMode": "code",
               "exemplar": false,
               "expr": "vector(100)",
-              "legendFormat": "Total Capacity",
+              "legendFormat": "Toplam Kapasite",
               "range": true,
               "refId": "B"
             }
           ],
-          "title": "Pod Utilization (%)",
+          "title": "Pod Bazli Kullanim (%)",
           "type": "timeseries"
         },
         {
@@ -1760,7 +1760,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "For MIG-enabled GPUs: per-pod memory usage. For non-MIG GPUs: per-device memory usage. MIG instances show '(MIG)' label with pod name, regular GPUs show '(GPU)' label with hostname.",
+          "description": "MIG aktif GPU'larda pod bazlı, MIG pasif GPU'larda cihaz bazlı bellek kullanımı. MIG instance'ları '(MIG)' etiketi ile pod ismiyle, normal GPU'lar '(GPU)' etiketi ile hostname ile gösterilir.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1819,7 +1819,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Total Capacity"
+                  "options": "Toplam Kapasite"
                 },
                 "properties": [
                   {
@@ -1913,16 +1913,16 @@
               "editorMode": "code",
               "exemplar": false,
               "expr": "vector(100)",
-              "legendFormat": "Total Capacity",
+              "legendFormat": "Toplam Kapasite",
               "range": true,
               "refId": "capacity"
             }
           ],
-          "title": "Memory Usage (%)",
+          "title": "Bellek Kullanimi (%)",
           "type": "timeseries"
         }
       ],
-      "title": "Workload Details",
+      "title": "Pod ve GPU Detay",
       "type": "row"
     },
     {
@@ -1940,14 +1940,14 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Complete GPU details table with hostname, model, pod, utilization and memory percentages",
+          "description": "Tüm GPU'ların detaylı listesi",
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "thresholds"
               },
               "custom": {
-                "align": "left",
+                "align": "center",
                 "cellOptions": {
                   "type": "auto"
                 },
@@ -1969,43 +1969,7 @@
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Hostname"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 200
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Model"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 180
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Pod"
-                },
-                "properties": [
-                  {
-                    "id": "custom.width",
-                    "value": 250
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Utilization %"
+                  "options": "Kullanim %"
                 },
                 "properties": [
                   {
@@ -2047,17 +2011,13 @@
                   {
                     "id": "min",
                     "value": 0
-                  },
-                  {
-                    "id": "custom.width",
-                    "value": 150
                   }
                 ]
               },
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Memory %"
+                  "options": "Bellek %"
                 },
                 "properties": [
                   {
@@ -2099,17 +2059,57 @@
                   {
                     "id": "min",
                     "value": 0
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Kapasite GB"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "decgbytes"
                   },
                   {
-                    "id": "custom.width",
-                    "value": 150
+                    "id": "decimals",
+                    "value": 0
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Kullanim GB"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "decgbytes"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "gpu_key"
+                },
+                "properties": [
+                  {
+                    "id": "custom.hidden",
+                    "value": true
                   }
                 ]
               }
             ]
           },
           "gridPos": {
-            "h": 20,
+            "h": 30,
             "w": 24,
             "x": 0,
             "y": 22
@@ -2118,17 +2118,14 @@
           "options": {
             "cellHeight": "sm",
             "footer": {
-              "countRows": true,
-              "enablePagination": true,
-              "fields": ["Utilization %", "Memory %"],
-              "reducer": ["mean"],
-              "show": true
+              "enablePagination": false,
+              "show": false
             },
             "showHeader": true,
             "sortBy": [
               {
                 "desc": false,
-                "displayName": "Hostname"
+                "displayName": "gpu_key"
               }
             ]
           },
@@ -2140,7 +2137,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (Hostname, modelName, UUID, GPU_I_ID, exported_pod) (\n  DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n) * 100",
+              "expr": "(\n  label_join(\n    max by (modelName, GPU_I_PROFILE, UUID, GPU_I_ID) (\n      DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n    ) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    label_replace(\n      avg(max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})) * 100,\n      \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n    ),\n    \"modelName\", \"TOPLAM\", \"\", \"\"\n  )\n)",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
@@ -2154,21 +2151,51 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n/\nclamp_min(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n  or\n  (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n, 1) * 100",
+              "expr": "(\n  label_join(\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n    /\n    clamp_min(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    , 1) * 100,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}))\n    /\n    clamp_min(\n      sum(\n        max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n        or\n        (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n      )\n    , 1) * 100,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  )\n)",
               "format": "table",
               "hide": false,
               "instant": true,
               "legendFormat": "__auto",
               "range": false,
               "refId": "mem"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "(\n  label_join(\n    max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) / 1024,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    sum(max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})) / 1024,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  )\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "memused"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "(\n  label_join(\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    ) / 1024,\n    \"gpu_key\", \":\", \"UUID\", \"GPU_I_ID\"\n  )\n)\nor\n(\n  label_replace(\n    sum(\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n      or\n      (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n    ) / 1024,\n    \"gpu_key\", \"0_TOPLAM\", \"\", \"\"\n  )\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "memcap"
             }
           ],
-          "title": "GPU Details",
+          "title": "GPU Detay Tablosu",
           "transformations": [
             {
               "id": "joinByField",
               "options": {
-                "byField": "UUID",
+                "byField": "gpu_key",
                 "mode": "outer"
               }
             },
@@ -2176,27 +2203,26 @@
               "id": "organize",
               "options": {
                 "excludeByName": {
+                  "gpu_key": true,
                   "Time": true,
-                  "Time 1": true,
-                  "Time 2": true,
                   "UUID": true,
-                  "GPU_I_ID": true,
-                  "GPU_I_ID 1": true,
-                  "GPU_I_ID 2": true
+                  "GPU_I_ID": true
                 },
                 "indexByName": {
-                  "Hostname": 0,
-                  "modelName": 1,
-                  "exported_pod": 2,
-                  "Value #util": 3,
-                  "Value #mem": 4
+                  "modelName": 0,
+                  "GPU_I_PROFILE": 1,
+                  "Value #util": 2,
+                  "Value #mem": 3,
+                  "Value #memused": 4,
+                  "Value #memcap": 5
                 },
                 "renameByName": {
-                  "Hostname": "Hostname",
                   "modelName": "Model",
-                  "exported_pod": "Pod",
-                  "Value #util": "Utilization %",
-                  "Value #mem": "Memory %"
+                  "GPU_I_PROFILE": "MIG Profil",
+                  "Value #util": "Kullanim %",
+                  "Value #mem": "Bellek %",
+                  "Value #memused": "Kullanim GB",
+                  "Value #memcap": "Kapasite GB"
                 }
               }
             }
@@ -2204,8 +2230,579 @@
           "type": "table"
         }
       ],
-      "title": "GPU Details Table",
+      "title": "GPU Listesi (Tablo)",
       "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 200,
+      "panels": [],
+      "repeat": "gpu_uuid",
+      "repeatDirection": "v",
+      "title": "GPU: $gpu_uuid",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "GPU bilgileri ve aktif pod",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "color-text"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpu"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "GPU"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "modelName"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Model"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Hostname"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Node"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GPU_I_ID"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "MIG"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GPU_I_PROFILE"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Profil"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "exported_pod"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Pod"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 201,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "enablePagination": false,
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max by (gpu, modelName, Hostname, GPU_I_ID, GPU_I_PROFILE, exported_pod) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{UUID=~\"$gpu_uuid\"})",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Bilgisi",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "gpu": 0,
+              "modelName": 1,
+              "Hostname": 2,
+              "GPU_I_ID": 3,
+              "GPU_I_PROFILE": 4,
+              "exported_pod": 5,
+              "Value": 6,
+              "Time": 7
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "GPU kullanım yüzdesi",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "rgba(255, 255, 0, 0.08)",
+                "value": 70
+              },
+              {
+                "color": "rgba(255, 0, 0, 0.08)",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 26
+      },
+      "id": 202,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "clamp_max(avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE{UUID=~\"$gpu_uuid\"}[$__rate_interval]) * 100, 100)",
+          "legendFormat": "{{exported_pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Kullanım (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "GPU bellek kullanım yüzdesi",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "max": 100,
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "rgba(255, 255, 0, 0.08)",
+                "value": 70
+              },
+              {
+                "color": "rgba(255, 0, 0, 0.08)",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 26
+      },
+      "id": 203,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(\n  DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"}\n  /\n  clamp_min(\n    DCGM_FI_DEV_FB_TOTAL{UUID=~\"$gpu_uuid\"}\n    or\n    (DCGM_FI_DEV_FB_USED{UUID=~\"$gpu_uuid\"} + DCGM_FI_DEV_FB_FREE{UUID=~\"$gpu_uuid\"})\n  , 1)\n) * 100",
+          "legendFormat": "{{exported_pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Bellek Kullanımı (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "GPU sıcaklık ve güç tüketimi",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Sıcaklık"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Güç"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "watt"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 26
+      },
+      "id": 204,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max by (UUID, GPU_I_ID) (DCGM_FI_DEV_GPU_TEMP{UUID=~\"$gpu_uuid\"})",
+          "legendFormat": "Sıcaklık",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max by (UUID, GPU_I_ID) (DCGM_FI_DEV_POWER_USAGE{UUID=~\"$gpu_uuid\"})",
+          "legendFormat": "Güç",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Sıcaklık & Güç",
+      "type": "timeseries"
     }
   ],
   "refresh": "1m",
@@ -2224,7 +2821,7 @@
         "current": {},
         "hide": 0,
         "includeAll": false,
-        "label": "Data Source",
+        "label": "Veri Kaynağı",
         "multi": false,
         "name": "datasource",
         "options": [],
@@ -2257,6 +2854,31 @@
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}, UUID)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "GPU (UUID)",
+        "multi": true,
+        "name": "gpu_uuid",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}, UUID)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query",
+        "limitSelection": 10
       }
     ]
   },
@@ -2287,8 +2909,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v33",
-  "uid": "gpu-monitoring-prod-v33",
-  "version": 33,
+  "title": "GPU Izleme - Production v32",
+  "uid": "gpu-monitoring-prod-v32",
+  "version": 32,
   "weekStart": ""
 }
