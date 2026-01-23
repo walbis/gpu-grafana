@@ -2465,8 +2465,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v41",
-  "uid": "gpu-monitoring-prod-v41",
-  "version": 41,
+  "title": "GPU Monitoring - Production v42",
+  "uid": "gpu-monitoring-prod-v42",
+  "version": 42,
   "weekStart": ""
 }
