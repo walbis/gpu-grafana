@@ -1940,7 +1940,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "GPU details with utilization and memory metrics. Now = instant, Avg = selected range average, 09-18 = business hours, 18-09 = off hours.",
+          "description": "GPU details with utilization and memory metrics. Now = instant value, Avg = average over selected time range.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2120,7 +2120,7 @@
             "footer": {
               "countRows": true,
               "enablePagination": true,
-              "fields": ["Util Now", "Mem Now", "Util 09-18", "Mem 09-18", "Util 18-09", "Mem 18-09", "Util Avg", "Mem Avg"],
+              "fields": ["Util Now", "Mem Now", "Util Avg", "Mem Avg"],
               "reducer": ["mean"],
               "show": true
             },
@@ -2182,34 +2182,6 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "avg_over_time(\n  (max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n   and on() (hour() >= 9 and hour() < 18)\n  )[$avg_range:5m]\n) * 100",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "util_0918"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "avg_over_time(\n  (max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n   and on() (hour() >= 18 or hour() < 9)\n  )[$avg_range:5m]\n) * 100",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "util_1809"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
               "expr": "max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n/\nclamp_min(\n  max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n  or\n  (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n, 1) * 100",
               "format": "table",
               "instant": true,
@@ -2230,34 +2202,6 @@
               "legendFormat": "__auto",
               "range": false,
               "refId": "mem_avg"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "avg_over_time(\n  (\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n      /\n      clamp_min(\n        max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n        or\n        (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n      , 1)\n    )\n    and on() (hour() >= 9 and hour() < 18)\n  )[$avg_range:5m]\n) * 100",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "mem_0918"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "exemplar": false,
-              "expr": "avg_over_time(\n  (\n    (\n      max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"})\n      /\n      clamp_min(\n        max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_TOTAL{Hostname=~\"$hostname\"})\n        or\n        (max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_USED{Hostname=~\"$hostname\"}) + max by (UUID, GPU_I_ID) (DCGM_FI_DEV_FB_FREE{Hostname=~\"$hostname\"}))\n      , 1)\n    )\n    and on() (hour() >= 18 or hour() < 9)\n  )[$avg_range:5m]\n) * 100",
-              "format": "table",
-              "instant": true,
-              "legendFormat": "__auto",
-              "range": false,
-              "refId": "mem_1809"
             }
           ],
           "title": "GPU Details",
@@ -2279,10 +2223,6 @@
                   "Time 3": true,
                   "Time 4": true,
                   "Time 5": true,
-                  "Time 6": true,
-                  "Time 7": true,
-                  "Time 8": true,
-                  "Time 9": true,
                   "UUID": true,
                   "GPU_I_ID": true,
                   "GPU_I_ID 1": true,
@@ -2290,10 +2230,6 @@
                   "GPU_I_ID 3": true,
                   "GPU_I_ID 4": true,
                   "GPU_I_ID 5": true,
-                  "GPU_I_ID 6": true,
-                  "GPU_I_ID 7": true,
-                  "GPU_I_ID 8": true,
-                  "GPU_I_ID 9": true,
                   "Value #base": true
                 },
                 "indexByName": {
@@ -2302,25 +2238,17 @@
                   "exported_pod": 2,
                   "Value #util_now": 3,
                   "Value #mem_now": 4,
-                  "Value #util_0918": 5,
-                  "Value #mem_0918": 6,
-                  "Value #util_1809": 7,
-                  "Value #mem_1809": 8,
-                  "Value #util_avg": 9,
-                  "Value #mem_avg": 10
+                  "Value #util_avg": 5,
+                  "Value #mem_avg": 6
                 },
                 "renameByName": {
                   "Hostname": "Hostname",
                   "modelName": "Model",
                   "exported_pod": "Pod",
                   "Value #util_now": "Util Now",
-                  "Value #util_avg": "Util Avg",
-                  "Value #util_0918": "Util 09-18",
-                  "Value #util_1809": "Util 18-09",
                   "Value #mem_now": "Mem Now",
-                  "Value #mem_avg": "Mem Avg",
-                  "Value #mem_0918": "Mem 09-18",
-                  "Value #mem_1809": "Mem 18-09"
+                  "Value #util_avg": "Util Avg",
+                  "Value #mem_avg": "Mem Avg"
                 }
               }
             }
@@ -2448,8 +2376,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v36",
-  "uid": "gpu-monitoring-prod-v36",
-  "version": 36,
+  "title": "GPU Monitoring - Production v38",
+  "uid": "gpu-monitoring-prod-v38",
+  "version": 38,
   "weekStart": ""
 }
