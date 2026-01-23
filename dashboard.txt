@@ -1940,7 +1940,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "description": "Complete GPU details table with hostname, model, pod, utilization and memory percentages",
+          "description": "GPU details with current and time-based average utilization. Avg 09-18 = business hours, Avg 18-09 = off hours.",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1974,7 +1974,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 200
+                    "value": 150
                   }
                 ]
               },
@@ -1986,7 +1986,7 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 180
+                    "value": 140
                   }
                 ]
               },
@@ -1998,14 +1998,14 @@
                 "properties": [
                   {
                     "id": "custom.width",
-                    "value": 250
+                    "value": 200
                   }
                 ]
               },
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Utilization %"
+                  "options": "Util % (Now)"
                 },
                 "properties": [
                   {
@@ -2050,14 +2050,14 @@
                   },
                   {
                     "id": "custom.width",
-                    "value": 150
+                    "value": 120
                   }
                 ]
               },
               {
                 "matcher": {
                   "id": "byName",
-                  "options": "Memory %"
+                  "options": "Util % (09-18)"
                 },
                 "properties": [
                   {
@@ -2102,7 +2102,111 @@
                   },
                   {
                     "id": "custom.width",
-                    "value": 150
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Util % (18-09)"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "gradient",
+                      "type": "gauge",
+                      "valueDisplayMode": "text"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 70
+                        },
+                        {
+                          "color": "red",
+                          "value": 90
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "max",
+                    "value": 100
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Mem %"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "mode": "gradient",
+                      "type": "gauge",
+                      "valueDisplayMode": "text"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 70
+                        },
+                        {
+                          "color": "red",
+                          "value": 90
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "max",
+                    "value": 100
+                  },
+                  {
+                    "id": "min",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 120
                   }
                 ]
               }
@@ -2120,7 +2224,7 @@
             "footer": {
               "countRows": true,
               "enablePagination": true,
-              "fields": ["Utilization %", "Memory %"],
+              "fields": ["Util % (Now)", "Util % (09-18)", "Util % (18-09)", "Mem %"],
               "reducer": ["mean"],
               "show": true
             },
@@ -2140,12 +2244,54 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "max by (Hostname, modelName, UUID, GPU_I_ID, exported_pod) (\n  DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n) * 100",
+              "expr": "max by (Hostname, modelName, UUID, GPU_I_ID, exported_pod) (\n  DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"}\n) * 0",
               "format": "table",
               "instant": true,
               "legendFormat": "__auto",
               "range": false,
-              "refId": "util"
+              "refId": "base"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "max by (UUID, GPU_I_ID) (\n  DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"}\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "util_now"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "avg_over_time(\n  (max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n   and on() (hour() >= 9 and hour() < 18)\n  )[$avg_range:5m]\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "util_0918"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "avg_over_time(\n  (max by (UUID, GPU_I_ID) (DCGM_FI_PROF_GR_ENGINE_ACTIVE{Hostname=~\"$hostname\"})\n   and on() (hour() >= 18 or hour() < 9)\n  )[$avg_range:5m]\n) * 100",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "util_1809"
             },
             {
               "datasource": {
@@ -2179,24 +2325,35 @@
                   "Time": true,
                   "Time 1": true,
                   "Time 2": true,
+                  "Time 3": true,
+                  "Time 4": true,
+                  "Time 5": true,
                   "UUID": true,
                   "GPU_I_ID": true,
                   "GPU_I_ID 1": true,
-                  "GPU_I_ID 2": true
+                  "GPU_I_ID 2": true,
+                  "GPU_I_ID 3": true,
+                  "GPU_I_ID 4": true,
+                  "GPU_I_ID 5": true,
+                  "Value #base": true
                 },
                 "indexByName": {
                   "Hostname": 0,
                   "modelName": 1,
                   "exported_pod": 2,
-                  "Value #util": 3,
-                  "Value #mem": 4
+                  "Value #util_now": 3,
+                  "Value #util_0918": 4,
+                  "Value #util_1809": 5,
+                  "Value #mem": 6
                 },
                 "renameByName": {
                   "Hostname": "Hostname",
                   "modelName": "Model",
                   "exported_pod": "Pod",
-                  "Value #util": "Utilization %",
-                  "Value #mem": "Memory %"
+                  "Value #util_now": "Util % (Now)",
+                  "Value #util_0918": "Util % (09-18)",
+                  "Value #util_1809": "Util % (18-09)",
+                  "Value #mem": "Mem %"
                 }
               }
             }
@@ -2241,7 +2398,7 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(DCGM_FI_PROF_GR_ENGINE_ACTIVE, Hostname)",
+        "definition": "label_values(DCGM_FI_DEV_GPU_TEMP, Hostname)",
         "hide": 0,
         "includeAll": true,
         "label": "GPU Node",
@@ -2249,7 +2406,7 @@
         "name": "hostname",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_PROF_GR_ENGINE_ACTIVE, Hostname)",
+          "query": "label_values(DCGM_FI_DEV_GPU_TEMP, Hostname)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
@@ -2257,6 +2414,43 @@
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "7d",
+          "value": "7d"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Avg Range",
+        "multi": false,
+        "name": "avg_range",
+        "options": [
+          {
+            "selected": false,
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "selected": false,
+            "text": "3d",
+            "value": "3d"
+          },
+          {
+            "selected": true,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "14d",
+            "value": "14d"
+          }
+        ],
+        "query": "1d,3d,7d,14d",
+        "skipUrlSync": false,
+        "type": "custom"
       }
     ]
   },
@@ -2287,8 +2481,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v33",
-  "uid": "gpu-monitoring-prod-v33",
-  "version": 33,
+  "title": "GPU Monitoring - Production v34",
+  "uid": "gpu-monitoring-prod-v34",
+  "version": 34,
   "weekStart": ""
 }
