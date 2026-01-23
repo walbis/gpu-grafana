@@ -1,0 +1,124 @@
+# GPU Timeline Dashboard - Prometheus Recording Rules
+# ===================================================
+# Bu dosyayi Prometheus konfigurasyonuna ekleyin:
+#   rule_files:
+#     - /etc/prometheus/rules/gpu-timeline-rules.yaml
+#
+# OpenShift icin:
+#   oc create configmap gpu-timeline-rules --from-file=gpu-timeline-rules.yaml -n openshift-monitoring
+#   Sonra PrometheusRule CR olusturun
+
+groups:
+  - name: gpu_timeline_5m
+    interval: 5m
+    rules:
+      # GPU Utilization - 5 dakikalik ortalama (0-100 arasi)
+      - record: gpu:utilization:avg5m
+        expr: |
+          avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE[5m]) * 100
+        labels:
+          aggregation: "5m"
+
+      # GPU Memory Kullanimi - 5 dakikalik ortalama (MiB)
+      - record: gpu:memory_used_mib:avg5m
+        expr: |
+          avg_over_time(DCGM_FI_DEV_FB_USED[5m])
+        labels:
+          aggregation: "5m"
+
+      # GPU Memory Yuzde - 5 dakikalik ortalama (0-100 arasi)
+      - record: gpu:memory_percent:avg5m
+        expr: |
+          (
+            avg_over_time(DCGM_FI_DEV_FB_USED[5m])
+            /
+            avg_over_time(DCGM_FI_DEV_FB_TOTAL[5m])
+          ) * 100
+        labels:
+          aggregation: "5m"
+
+      # Pod-GPU Mapping - Aktif pod bilgisi
+      - record: gpu:pod_active:info
+        expr: |
+          count by (UUID, Hostname, exported_pod, GPU_I_ID, GPU_I_PROFILE, modelName) (
+            DCGM_FI_DEV_FB_USED{exported_pod!=""} > 0
+          )
+        labels:
+          aggregation: "instant"
+
+  - name: gpu_timeline_aggregates
+    interval: 5m
+    rules:
+      # Toplam aktif GPU sayisi (pod kullanan)
+      - record: gpu:active_count:total
+        expr: |
+          count(DCGM_FI_DEV_FB_USED{exported_pod!=""} > 100)
+        labels:
+          aggregation: "instant"
+
+      # Hostname bazinda GPU kullanim ozeti
+      - record: gpu:utilization_by_host:avg5m
+        expr: |
+          avg by (Hostname) (
+            avg_over_time(DCGM_FI_PROF_GR_ENGINE_ACTIVE[5m]) * 100
+          )
+        labels:
+          aggregation: "5m"
+
+      # MIG slice tespit - MIG aktif GPU'lar
+      - record: gpu:mig_slices:info
+        expr: |
+          count by (UUID, Hostname, GPU_I_ID, GPU_I_PROFILE, modelName) (
+            DCGM_FI_DEV_FB_USED{GPU_I_ID!=""}
+          )
+        labels:
+          aggregation: "instant"
+
+      # GPU idle tespit (pod yok veya cok dusuk kullanim)
+      - record: gpu:idle:info
+        expr: |
+          (
+            DCGM_FI_PROF_GR_ENGINE_ACTIVE < 0.05
+          )
+          and on(UUID)
+          (
+            count by (UUID) (DCGM_FI_DEV_FB_USED{exported_pod=""}) > 0
+            or
+            absent(DCGM_FI_DEV_FB_USED{exported_pod!=""})
+          )
+        labels:
+          aggregation: "instant"
+
+  - name: gpu_timeline_ranges
+    interval: 1m
+    rules:
+      # Utilization seviyesi kategorileri (renk kodlamasi icin)
+      # 0: idle, 1: low (0-30%), 2: medium (30-70%), 3: high (70-90%), 4: critical (90-100%)
+      - record: gpu:utilization_level:category
+        expr: |
+          (DCGM_FI_PROF_GR_ENGINE_ACTIVE < 0.01) * 0
+          or
+          (DCGM_FI_PROF_GR_ENGINE_ACTIVE >= 0.01 and DCGM_FI_PROF_GR_ENGINE_ACTIVE < 0.30) * 1
+          or
+          (DCGM_FI_PROF_GR_ENGINE_ACTIVE >= 0.30 and DCGM_FI_PROF_GR_ENGINE_ACTIVE < 0.70) * 2
+          or
+          (DCGM_FI_PROF_GR_ENGINE_ACTIVE >= 0.70 and DCGM_FI_PROF_GR_ENGINE_ACTIVE < 0.90) * 3
+          or
+          (DCGM_FI_PROF_GR_ENGINE_ACTIVE >= 0.90) * 4
+        labels:
+          aggregation: "instant"
+
+---
+# OpenShift PrometheusRule CR (alternatif deployment)
+# apiVersion: monitoring.coreos.com/v1
+# kind: PrometheusRule
+# metadata:
+#   name: gpu-timeline-rules
+#   namespace: openshift-monitoring
+#   labels:
+#     prometheus: k8s
+#     role: alert-rules
+# spec:
+#   groups:
+#     - name: gpu_timeline_5m
+#       ... (yukaridaki rules)

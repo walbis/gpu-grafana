@@ -1,0 +1,538 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "GPU Timeline Dashboard - Gantt chart ile GPU kullanim goruntuleme",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "panels": [],
+      "title": "GPU Timeline - Gantt Chart",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "getOption": "// GPU Timeline Gantt Chart - ECharts Configuration\n// Bu kod Grafana ECharts panel icinde calisir\n\nconst utilizationData = data.series.find(s => s.refId === 'A');\nconst memoryData = data.series.find(s => s.refId === 'B');\nconst podData = data.series.find(s => s.refId === 'C');\n\nif (!utilizationData || !utilizationData.fields) {\n  return {\n    title: { text: 'Veri bekleniyor...', left: 'center', top: 'center' },\n    series: []\n  };\n}\n\n// GPU listesini olustur (hostname/GPU-ID/MIG formatinda)\nconst gpuMap = new Map();\nconst migMap = new Map();\n\nutilizationData.fields.forEach(field => {\n  if (field.name === 'Time') return;\n  \n  const labels = field.labels || {};\n  const hostname = labels.Hostname || 'unknown';\n  const uuid = labels.UUID || field.name;\n  const gpuId = labels.gpu || '0';\n  const migId = labels.GPU_I_ID || '';\n  const migProfile = labels.GPU_I_PROFILE || '';\n  const modelName = labels.modelName || 'GPU';\n  \n  const gpuKey = `${hostname}|${uuid}`;\n  \n  if (migId && migId !== '') {\n    // MIG slice\n    if (!migMap.has(gpuKey)) {\n      migMap.set(gpuKey, []);\n    }\n    migMap.get(gpuKey).push({\n      migId,\n      migProfile,\n      field,\n      labels\n    });\n  } else {\n    // Normal GPU\n    gpuMap.set(gpuKey, {\n      hostname,\n      uuid,\n      gpuId,\n      modelName,\n      field,\n      labels\n    });\n  }\n});\n\n// Y-axis kategorilerini olustur\nconst yAxisData = [];\nconst gpuDataMap = new Map();\nlet yIndex = 0;\n\ngpuMap.forEach((gpu, key) => {\n  const displayName = `${gpu.hostname} / GPU-${gpu.gpuId} [${gpu.modelName}]`;\n  yAxisData.push(displayName);\n  gpuDataMap.set(key, { yIndex, ...gpu });\n  yIndex++;\n  \n  // MIG slice'lari ekle\n  const migs = migMap.get(key) || [];\n  migs.sort((a, b) => parseInt(a.migId) - parseInt(b.migId));\n  migs.forEach(mig => {\n    const migDisplayName = `  \\u2514\\u2500 MIG ${mig.migProfile} (${mig.migId})`;\n    yAxisData.push(migDisplayName);\n    gpuDataMap.set(`${key}|MIG|${mig.migId}`, { yIndex, ...mig });\n    yIndex++;\n  });\n});\n\n// Zaman serisi verisini Gantt barlarina donustur\nconst timeField = utilizationData.fields.find(f => f.name === 'Time');\nconst times = timeField ? timeField.values : [];\n\n// Renk tanimlamalari\nconst getColor = (util) => {\n  if (util < 1) return '#808080';      // Idle - Gri\n  if (util < 30) return '#73BF69';     // Low - Yesil\n  if (util < 70) return '#FADE2A';     // Medium - Sari\n  if (util < 90) return '#FF9830';     // High - Turuncu\n  return '#F2495C';                     // Critical - Kirmizi\n};\n\nconst getColorName = (util) => {\n  if (util < 1) return 'Idle';\n  if (util < 30) return 'Dusuk';\n  if (util < 70) return 'Orta';\n  if (util < 90) return 'Yuksek';\n  return 'Kritik';\n};\n\n// Gantt chart verisi olustur\nconst seriesData = [];\n\ngpuDataMap.forEach((gpuInfo, key) => {\n  const field = gpuInfo.field;\n  if (!field || !field.values) return;\n  \n  const values = field.values;\n  let startIdx = 0;\n  let currentUtil = values[0] * 100;\n  \n  for (let i = 1; i <= values.length; i++) {\n    const util = i < values.length ? values[i] * 100 : -1;\n    const prevUtil = values[i-1] * 100;\n    \n    // Utilization seviyesi degistiginde veya son noktada bar olustur\n    const prevLevel = Math.floor(prevUtil / 30);\n    const currLevel = Math.floor(util / 30);\n    \n    if (i === values.length || Math.abs(util - currentUtil) > 10 || prevLevel !== currLevel) {\n      const startTime = times[startIdx];\n      const endTime = times[i-1] || times[times.length - 1];\n      const avgUtil = currentUtil;\n      \n      seriesData.push({\n        value: [\n          gpuInfo.yIndex,\n          startTime,\n          endTime,\n          avgUtil\n        ],\n        itemStyle: {\n          color: getColor(avgUtil)\n        },\n        labels: gpuInfo.labels,\n        hostname: gpuInfo.hostname,\n        gpuId: gpuInfo.gpuId\n      });\n      \n      startIdx = i;\n      currentUtil = util;\n    }\n  }\n});\n\n// ECharts option\nreturn {\n  tooltip: {\n    trigger: 'item',\n    formatter: function(params) {\n      const data = params.data;\n      if (!data || !data.value) return '';\n      \n      const startTime = new Date(data.value[1]).toLocaleString('tr-TR');\n      const endTime = new Date(data.value[2]).toLocaleString('tr-TR');\n      const util = data.value[3].toFixed(1);\n      const labels = data.labels || {};\n      const pod = labels.exported_pod || 'N/A';\n      \n      return `\n        <div style=\"padding: 8px;\">\n          <strong>${yAxisData[data.value[0]]}</strong><br/>\n          <hr style=\"margin: 4px 0;\"/>\n          <b>Pod:</b> ${pod}<br/>\n          <b>Utilization:</b> ${util}% (${getColorName(parseFloat(util))})<br/>\n          <b>Baslangic:</b> ${startTime}<br/>\n          <b>Bitis:</b> ${endTime}\n        </div>\n      `;\n    }\n  },\n  legend: {\n    data: ['Idle', 'Dusuk (0-30%)', 'Orta (30-70%)', 'Yuksek (70-90%)', 'Kritik (90-100%)'],\n    bottom: 10,\n    itemWidth: 20,\n    itemHeight: 14\n  },\n  grid: {\n    left: '15%',\n    right: '5%',\n    top: '5%',\n    bottom: '15%'\n  },\n  xAxis: {\n    type: 'time',\n    axisLabel: {\n      formatter: function(value) {\n        const date = new Date(value);\n        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });\n      }\n    },\n    splitLine: {\n      show: true,\n      lineStyle: {\n        color: '#333',\n        type: 'dashed'\n      }\n    }\n  },\n  yAxis: {\n    type: 'category',\n    data: yAxisData,\n    axisLabel: {\n      fontSize: 11,\n      formatter: function(value) {\n        if (value.length > 40) {\n          return value.substring(0, 37) + '...';\n        }\n        return value;\n      }\n    },\n    inverse: true\n  },\n  dataZoom: [\n    {\n      type: 'slider',\n      xAxisIndex: 0,\n      filterMode: 'none',\n      bottom: 35\n    },\n    {\n      type: 'inside',\n      xAxisIndex: 0,\n      filterMode: 'none'\n    }\n  ],\n  series: [\n    {\n      name: 'GPU Timeline',\n      type: 'custom',\n      renderItem: function(params, api) {\n        const yValue = api.value(0);\n        const startTime = api.coord([api.value(1), yValue]);\n        const endTime = api.coord([api.value(2), yValue]);\n        const height = api.size([0, 1])[1] * 0.6;\n        \n        return {\n          type: 'rect',\n          shape: {\n            x: startTime[0],\n            y: startTime[1] - height / 2,\n            width: Math.max(endTime[0] - startTime[0], 2),\n            height: height\n          },\n          style: api.style()\n        };\n      },\n      encode: {\n        x: [1, 2],\n        y: 0\n      },\n      data: seriesData\n    }\n  ]\n};"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "gpu:utilization:avg5m{Hostname=~\"$hostname\"}",
+          "format": "time_series",
+          "instant": false,
+          "interval": "5m",
+          "legendFormat": "{{Hostname}}/{{UUID}}/{{GPU_I_ID}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "gpu:memory_percent:avg5m{Hostname=~\"$hostname\"}",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "5m",
+          "legendFormat": "{{Hostname}}/{{UUID}}/{{GPU_I_ID}}",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "gpu:pod_active:info{Hostname=~\"$hostname\"}",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "5m",
+          "legendFormat": "{{exported_pod}}",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "GPU Timeline - Pod Kullanimi",
+      "type": "volkovlabs-echarts-panel"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 101,
+      "panels": [],
+      "title": "Legend & Bilgi",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 2,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "## Renk Kodlamasi\n\n| Renk | Utilization | Aciklama |\n|------|-------------|----------|\n| <span style=\"background-color:#808080;padding:2px 10px;color:white;\">Gri</span> | Idle | Pod yok veya kullanim < 1% |\n| <span style=\"background-color:#73BF69;padding:2px 10px;\">Yesil</span> | 0-30% | Dusuk kullanim |\n| <span style=\"background-color:#FADE2A;padding:2px 10px;\">Sari</span> | 30-70% | Orta kullanim |\n| <span style=\"background-color:#FF9830;padding:2px 10px;\">Turuncu</span> | 70-90% | Yuksek kullanim |\n| <span style=\"background-color:#F2495C;padding:2px 10px;color:white;\">Kirmizi</span> | 90-100% | Kritik kullanim |\n\n**Kullanim:** Bar uzerine gelince pod ismi, utilization ve zaman araligi gorursunuz. Zoom icin mouse scroll veya alt slider kullanin.",
+        "mode": "markdown"
+      },
+      "title": "Renk Kodlamasi ve Kullanim",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 102,
+      "panels": [],
+      "title": "Heatmap (Alternatif Gorunum)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 3,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "cellValues": {
+          "unit": "percent"
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "#808080",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "RdYlGn",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "showColorScale": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisLabel": "GPU",
+          "reverse": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "gpu:utilization:avg5m{Hostname=~\"$hostname\"}",
+          "format": "time_series",
+          "instant": false,
+          "interval": "5m",
+          "legendFormat": "{{Hostname}}/{{modelName}}/{{gpu}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Utilization Heatmap",
+      "type": "heatmap"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 103,
+      "panels": [],
+      "title": "Stacked Area (Toplam Kapasite)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "gpu:utilization:avg5m{Hostname=~\"$hostname\"}",
+          "format": "time_series",
+          "instant": false,
+          "interval": "5m",
+          "legendFormat": "{{Hostname}}/GPU-{{gpu}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "GPU Utilization (Stacked)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 104,
+      "panels": [],
+      "title": "GPU Detay Tablosu",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Utilization" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Memory %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Utilization" }]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "gpu:utilization:avg5m{Hostname=~\"$hostname\"}",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "gpu:memory_percent:avg5m{Hostname=~\"$hostname\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "B"
+        }
+      ],
+      "title": "GPU Detay Tablosu",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "aggregation": true,
+              "job": true,
+              "instance": true
+            },
+            "renameByName": {
+              "Hostname": "Node",
+              "UUID": "GPU UUID",
+              "Value #A": "Utilization",
+              "Value #B": "Memory %",
+              "exported_pod": "Pod",
+              "gpu": "GPU ID",
+              "modelName": "Model",
+              "GPU_I_ID": "MIG ID",
+              "GPU_I_PROFILE": "MIG Profile"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["gpu", "nvidia", "dcgm", "timeline", "gantt"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(DCGM_FI_DEV_FB_USED, Hostname)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Hostname",
+        "multi": true,
+        "name": "hostname",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_DEV_FB_USED, Hostname)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ]
+  },
+  "timezone": "browser",
+  "title": "GPU Timeline Dashboard",
+  "uid": "gpu-timeline-gantt",
+  "version": 1
+}
