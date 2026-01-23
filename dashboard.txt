@@ -54,7 +54,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Number of physical GPUs on selected nodes (excluding MIG)",
+      "description": "Number of physical GPUs seen in selected time range (excluding MIG)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -103,7 +103,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count(count by (UUID) (DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"})) or vector(0)",
+          "expr": "count(count by (UUID) (max_over_time(DCGM_FI_DEV_GPU_TEMP{Hostname=~\"$hostname\"}[$__range]))) or vector(0)",
           "instant": true,
           "legendFormat": "Physical GPUs",
           "range": false,
@@ -983,11 +983,12 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "GPU memory usage percentage over time. Yellow line: total.",
+      "description": "GPU memory usage percentage over time. Red line: total.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
@@ -997,7 +998,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 10,
+            "fillOpacity": 25,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1060,13 +1061,27 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "yellow",
+                  "fixedColor": "red",
                   "mode": "fixed"
                 }
               },
               {
                 "id": "custom.fillOpacity",
                 "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(?!Total).*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "palette-classic-by-name"
+                }
               }
             ]
           }
@@ -2376,8 +2391,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Monitoring - Production v38",
-  "uid": "gpu-monitoring-prod-v38",
-  "version": 38,
+  "title": "GPU Monitoring - Production v39",
+  "uid": "gpu-monitoring-prod-v39",
+  "version": 39,
   "weekStart": ""
 }
