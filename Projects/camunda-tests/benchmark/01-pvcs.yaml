@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fio-pvc-efs-performance
+  namespace: fio-benchmark
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-performance
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fio-pvc-efs-standard
+  namespace: fio-benchmark
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-standard
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fio-pvc-nfs-rw
+  namespace: fio-benchmark
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-rw
+  resources:
+    requests:
+      storage: 10Gi

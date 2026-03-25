@@ -1,0 +1,154 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fio-bench-nfs-rw
+  namespace: fio-benchmark
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: fio
+          image: ${FIO_IMAGE}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              MOUNT_DIR="/mnt/data"
+
+              echo "=============================================="
+              echo "FIO Benchmark: nfs-rw"
+              echo "Started at: $(date)"
+              echo "=============================================="
+
+              # Warmup - create test file
+              echo ""
+              echo "[0/6] Warmup - Creating test files..."
+              fio --name=warmup --directory=$MOUNT_DIR --rw=write --bs=1M --size=1G --numjobs=1 --time_based --runtime=10 > /dev/null 2>&1 || true
+
+              # Test 1: Sequential Read
+              echo ""
+              echo "[1/6] Sequential Read Test (1M, 4 jobs, iodepth=32, 120s)"
+              echo "----------------------------------------------"
+              fio --name=seq-read \
+                  --directory=$MOUNT_DIR \
+                  --ioengine=libaio \
+                  --direct=1 \
+                  --rw=read \
+                  --bs=1M \
+                  --numjobs=4 \
+                  --iodepth=32 \
+                  --size=2G \
+                  --runtime=120 \
+                  --time_based \
+                  --group_reporting
+
+              # Test 2: Sequential Write
+              echo ""
+              echo "[2/6] Sequential Write Test (1M, 4 jobs, iodepth=32, 120s)"
+              echo "----------------------------------------------"
+              fio --name=seq-write \
+                  --directory=$MOUNT_DIR \
+                  --ioengine=libaio \
+                  --direct=1 \
+                  --rw=write \
+                  --bs=1M \
+                  --numjobs=4 \
+                  --iodepth=32 \
+                  --size=2G \
+                  --runtime=120 \
+                  --time_based \
+                  --group_reporting
+
+              # Test 3: Random Read 4K
+              echo ""
+              echo "[3/6] Random Read 4K Test (8 jobs, iodepth=64, 120s)"
+              echo "----------------------------------------------"
+              fio --name=rand-read-4k \
+                  --directory=$MOUNT_DIR \
+                  --ioengine=libaio \
+                  --direct=1 \
+                  --rw=randread \
+                  --bs=4k \
+                  --numjobs=8 \
+                  --iodepth=64 \
+                  --size=1G \
+                  --runtime=120 \
+                  --time_based \
+                  --group_reporting
+
+              # Test 4: Random Write 4K
+              echo ""
+              echo "[4/6] Random Write 4K Test (8 jobs, iodepth=64, 120s)"
+              echo "----------------------------------------------"
+              fio --name=rand-write-4k \
+                  --directory=$MOUNT_DIR \
+                  --ioengine=libaio \
+                  --direct=1 \
+                  --rw=randwrite \
+                  --bs=4k \
+                  --numjobs=8 \
+                  --iodepth=64 \
+                  --size=1G \
+                  --runtime=120 \
+                  --time_based \
+                  --group_reporting
+
+              # Test 5: Mixed R/W 70/30
+              echo ""
+              echo "[5/6] Mixed R/W 70/30 Test (8K, 8 jobs, 120s)"
+              echo "----------------------------------------------"
+              fio --name=mixed-rw \
+                  --directory=$MOUNT_DIR \
+                  --ioengine=libaio \
+                  --direct=1 \
+                  --rw=randrw \
+                  --rwmixread=70 \
+                  --bs=8k \
+                  --numjobs=8 \
+                  --iodepth=32 \
+                  --size=1G \
+                  --runtime=120 \
+                  --time_based \
+                  --group_reporting
+
+              # Test 6: Latency Profile
+              echo ""
+              echo "[6/6] Latency Profile Test (4K, 1 job, iodepth=1, fsync=1, 60s)"
+              echo "----------------------------------------------"
+              fio --name=latency-profile \
+                  --directory=$MOUNT_DIR \
+                  --ioengine=sync \
+                  --rw=randwrite \
+                  --bs=4k \
+                  --numjobs=1 \
+                  --iodepth=1 \
+                  --size=512M \
+                  --runtime=60 \
+                  --time_based \
+                  --fsync=1 \
+                  --lat_percentiles=1 \
+                  --percentile_list=50:90:95:99:99.9 \
+                  --group_reporting
+
+              echo ""
+              echo "=============================================="
+              echo "FIO Benchmark: nfs-rw - COMPLETED"
+              echo "Finished at: $(date)"
+              echo "=============================================="
+          volumeMounts:
+            - name: data
+              mountPath: /mnt/data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "2"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: fio-pvc-nfs-rw
